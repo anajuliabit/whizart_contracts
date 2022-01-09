@@ -9,9 +9,9 @@ import '@typechain/hardhat';
 import { utils } from 'ethers';
 import 'hardhat-deploy';
 import { HardhatUserConfig, task } from 'hardhat/config';
-import { TEthers, TUpgrades } from 'helpers/types/hardhat-type-extensions';
 import "solidity-coverage";
 import 'tsconfig-paths/register';
+import { TEthers, TUpgrades } from 'types/hardhat-type-extensions';
 
 declare module 'hardhat/types/runtime' {
   export interface HardhatRuntimeEnvironmentExtended {
@@ -70,7 +70,11 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
-  }
+  },
+  typechain: {
+    outDir: 'types/contracts',
+    target: 'ethers-v5',
+  },
 };
 export default config;
 

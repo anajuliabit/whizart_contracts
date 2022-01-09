@@ -76,7 +76,7 @@ contract WArtist is
     uint8 total_rarity;
     // Initial level: 1, Max level: 10
     uint8 creativity;
-    // Varis from 1 to 5
+    // Varies from 1 to 5
     uint8 paint_preference;
     // Max: 6
     uint8 color_slots;

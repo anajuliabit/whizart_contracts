@@ -1,5 +1,5 @@
 import { DeployFunction } from 'hardhat-deploy/types';
-import { HardhatRuntimeEnvironmentExtended } from 'helpers/types/hardhat-type-extensions';
+import { HardhatRuntimeEnvironmentExtended } from 'types/hardhat-type-extensions';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironmentExtended) => {
   const { getNamedAccounts, deployments } = hre;
