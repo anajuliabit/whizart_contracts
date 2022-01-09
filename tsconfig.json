@@ -26,7 +26,7 @@
       "tests/*": ["./tests/*"],
     }
   },
-  "include": ["types", "scripts", "test", "helpers", "./hardhat.config.ts", "./deploy"],
+  "include": ["types", "scripts", "test", "helpers", "./hardhat.config.ts", "deploy", "typechain-types"],
   "exclude": ["node_modules"],
   "files": ["./hardhat.config.ts", "helpers/types/__global.ts"]
 }

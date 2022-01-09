@@ -3,12 +3,9 @@
   "parserOptions": {
     "ecmaVersion": 2020, // Allows for the parsing of modern ECMAScript features
     "sourceType": "module", // Allows for the use of imports,
-    "ecmaFeatures": {
-      "jsx": false // Allows for the parsing of JSX
-    },
     "tsconfigRootDir": ".",
     "project": ["./tsconfig.json"],
-    "projectFolderIgnoreList": ["node_modules", "dist", "build", ".yarn", "build-utils"]
+    "projectFolderIgnoreList": ["node_modules", "coverage", "generated", ".vscode", ".github"]
   },
   "env": {
     "browser": true,
@@ -76,6 +73,7 @@
     "no-restricted-globals": "off",
     "eslint linebreak-style": 0,
     "object-curly-newline": 0,
-    "no-shadow": 0
+    "no-shadow": 0,
+    "react/jsx-filename-extension": "off"
   }
 }

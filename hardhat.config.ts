@@ -1,20 +1,22 @@
-require("dotenv").config();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
 import '@nomiclabs/hardhat-ethers';
 import "@nomiclabs/hardhat-etherscan";
 import '@nomiclabs/hardhat-waffle';
-import '@tenderly/hardhat-tenderly';
+import "@openzeppelin/hardhat-upgrades";
 import '@typechain/hardhat';
 import { utils } from 'ethers';
 import 'hardhat-deploy';
 import { HardhatUserConfig, task } from 'hardhat/config';
-import { TEthers } from 'helpers/types/hardhat-type-extensions';
+import { TEthers, TUpgrades } from 'helpers/types/hardhat-type-extensions';
 import "solidity-coverage";
 import 'tsconfig-paths/register';
 
-
 declare module 'hardhat/types/runtime' {
-  export interface HardhatRuntimeEnvironment {
+  export interface HardhatRuntimeEnvironmentExtended {
     ethers: TEthers;
+    upgrades: TUpgrades;
   }
 }
 
@@ -33,12 +35,12 @@ const config: HardhatUserConfig = {
       url: 'http://localhost:8545',
     },
     rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
-      accounts: [`${process.env.RINKEBY_DEPLOYER_PRIV_KEY}`],
+      url: `https://rinkeby.infura.io/v3/${process.env.RINKEBY_INFURA_KEY ?? ''}`,
+      accounts: [`${process.env.RINKEBY_DEPLOYER_PRIV_KEY ?? ''}`],
     },
     ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.ROPSTEN_INFURA_KEY}`,
-      accounts: [`${process.env.ROPSTEN_DEPLOYER_PRIV_KEY}`],
+      url: `https://ropsten.infura.io/v3/${process.env.ROPSTEN_INFURA_KEY ?? ''}`,
+      accounts: [`${process.env.ROPSTEN_DEPLOYER_PRIV_KEY ?? ''}`],
     },
     // matic: {
     //   url: 'https://rpc-mainnet.maticvigil.com/',
@@ -81,7 +83,7 @@ const findFirstAddr = async (ethers: TEthers, addr: string) => {
     const temp = accounts.find((f: string) => f === addr);
     if (temp?.length) return temp[0];
   }
-  throw `Could not normalize address: ${addr}`;
+  throw new Error(`Could not normalize address: ${addr}`);
 };
 
 task('accounts', 'Prints the list of accounts', async (_, { ethers }) => {
@@ -96,11 +98,9 @@ task('blockNumber', 'Prints the block number', async (_, { ethers }) => {
 
 task('balance', "Prints an account's balance")
   .addPositionalParam('account', "The account's address")
-  .setAction(async (taskArgs, { ethers }) => {
+  .setAction(async (taskArgs: { account: string }, { ethers }) => {
     const balance = await ethers.provider.getBalance(await findFirstAddr(ethers, taskArgs.account));
     console.log(formatUnits(balance, 'ether'), 'ETH');
   });
-
-
 
 

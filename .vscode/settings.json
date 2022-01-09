@@ -1,5 +1,4 @@
 {
-   "solidity-va.test.defaultUnittestTemplate": "hardhat",
    "files.exclude": {
       "**/.git": true,
       "**/.svn": true,
@@ -16,15 +15,12 @@
       "**/build/**/*": true,
       "**/debug/": true,
       "**/dist/": true,
-      "**/node_modules/": true,
       "**/obj": true,
-      "node_modules": true,
-      "node_modules/*/**": true,
-      "**/node_modules": true,
       "yarn-error.log": true,
       "**/yarn-error.log": true,
       "packages\\eth-hooks/lib": true,
-      "**/.yalc": true
+      "**/.yalc": true,
+      "node_modules/": true,
    },
    "search.exclude": {
       "**/.git": true,
@@ -42,20 +38,18 @@
       "**/build/**/*": true,
       "**/debug/": true,
       "**/dist/": true,
-      "**/node_modules/": true,
       "**/obj": true,
-      "node_modules": true,
-      "node_modules/*/**": true,
-      "**/node_modules": true,
       "yarn-error.log": true,
       "**/yarn-error.log": true,
       "**/.yalc": true
    },
-   "explorerExclude.backup": null,
    "solidity.packageDefaultDependenciesDirectory": "node_modules",
    "editor.formatOnSave": true,
    "solidity.formatter": "prettier",
    "[solidity]": {
      "editor.defaultFormatter": "JuanBlanco.solidity"
    },
+   "editor.codeActionsOnSave": {
+       "source.fixAll.eslint": true
+    },
 }
