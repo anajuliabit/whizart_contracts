@@ -1,8 +1,8 @@
 // eslint-disable-next-line
-import { ExternalProvider } from '@ethersproject/providers/src.ts/web3-provider';
-import '@nomiclabs/hardhat-ethers';
+import { ExternalProvider } from "@ethersproject/providers/src.ts/web3-provider";
+import "@nomiclabs/hardhat-ethers";
 
-export { };
+export {};
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -14,5 +14,3 @@ declare global {
     ethereum: ExternalProvider;
   }
 }
-
-

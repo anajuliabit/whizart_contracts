@@ -1,27 +1,25 @@
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
-import '@nomiclabs/hardhat-ethers';
+require("dotenv").config();
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
-import '@nomiclabs/hardhat-waffle';
+import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
-import '@typechain/hardhat';
-import { utils } from 'ethers';
-import 'hardhat-deploy';
-import { HardhatUserConfig, task } from 'hardhat/config';
+import "@typechain/hardhat";
+import "hardhat-deploy";
+import { HardhatUserConfig, task } from "hardhat/config";
 import "solidity-coverage";
-import 'tsconfig-paths/register';
-import { TEthers, TUpgrades } from 'types/hardhat-type-extensions';
+import "tsconfig-paths/register";
+import { TEthers, TUpgrades } from "types/hardhat-type-extensions";
 
-declare module 'hardhat/types/runtime' {
+declare module "hardhat/types/runtime" {
   export interface HardhatRuntimeEnvironmentExtended {
     ethers: TEthers;
     upgrades: TUpgrades;
   }
 }
 
-const { isAddress, getAddress, formatUnits } = utils;
-const defaultNetwork = 'rinkeby';
+const defaultNetwork = "hardhat";
 
 const config: HardhatUserConfig = {
   defaultNetwork,
@@ -32,15 +30,24 @@ const config: HardhatUserConfig = {
   },
   networks: {
     localhost: {
-      url: 'http://localhost:8545',
+      url: "http://localhost:8545",
     },
     rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.RINKEBY_INFURA_KEY ?? ''}`,
-      accounts: [`${process.env.RINKEBY_DEPLOYER_PRIV_KEY ?? ''}`],
+      url: `https://rinkeby.infura.io/v3/${
+        process.env.RINKEBY_INFURA_KEY ?? ""
+      }`,
+      accounts: [
+        `${process.env.RINKEBY_DEPLOYER_PRIV_KEY ?? ""}`,
+        `${process.env.RINKEBY_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+      ],
+      // gasPrice: 8000000000,
+      // gas: 2100000
     },
     ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.ROPSTEN_INFURA_KEY ?? ''}`,
-      accounts: [`${process.env.ROPSTEN_DEPLOYER_PRIV_KEY ?? ''}`],
+      url: `https://ropsten.infura.io/v3/${
+        process.env.ROPSTEN_INFURA_KEY ?? ""
+      }`,
+      accounts: [`${process.env.ROPSTEN_DEPLOYER_PRIV_KEY ?? ""}`],
     },
     // matic: {
     //   url: 'https://rpc-mainnet.maticvigil.com/',
@@ -53,7 +60,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.8.9',
+        version: "0.8.2",
         settings: {
           optimizer: {
             enabled: true,
@@ -64,47 +71,26 @@ const config: HardhatUserConfig = {
     ],
   },
   paths: {
-    cache: './generated/cache',
-    artifacts: './generated/artifacts',
-    deployments: './generated/deployments',
+    cache: "./generated/cache",
+    artifacts: "./generated/artifacts",
+    deployments: "./generated/deployments",
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   typechain: {
-    outDir: 'types/contracts',
-    target: 'ethers-v5',
+    outDir: "types/contracts",
+    target: "ethers-v5",
   },
 };
 export default config;
 
-const findFirstAddr = async (ethers: TEthers, addr: string) => {
-  if (isAddress(addr)) {
-    return getAddress(addr);
-  }
-  const accounts = await ethers.provider.listAccounts();
-  if (accounts !== undefined) {
-    const temp = accounts.find((f: string) => f === addr);
-    if (temp?.length) return temp[0];
-  }
-  throw new Error(`Could not normalize address: ${addr}`);
-};
-
-task('accounts', 'Prints the list of accounts', async (_, { ethers }) => {
-  const accounts = await ethers.provider.listAccounts();
+task("accounts", "Prints the list of accounts", async (_, { ethers }) => {
+  const accounts = await ethers.getSigners();
   accounts.forEach((account: any) => console.log(account));
 });
 
-task('blockNumber', 'Prints the block number', async (_, { ethers }) => {
+task("blockNumber", "Prints the block number", async (_, { ethers }) => {
   const blockNumber = await ethers.provider.getBlockNumber();
   console.log(blockNumber);
 });
-
-task('balance', "Prints an account's balance")
-  .addPositionalParam('account', "The account's address")
-  .setAction(async (taskArgs: { account: string }, { ethers }) => {
-    const balance = await ethers.provider.getBalance(await findFirstAddr(ethers, taskArgs.account));
-    console.log(formatUnits(balance, 'ether'), 'ETH');
-  });
-
-

@@ -1,5 +1,5 @@
 {
-  "name": "WhizArt",
+  "name": "whizart",
   "license": "MIT",
   "version": "0.1.0",
   "keywords": [
@@ -19,7 +19,8 @@
     "balance": "hardhat balance",
     "send": "hardhat send",
     "generate": "hardhat generate",
-    "account": "hardhat account"
+    "account": "hardhat account",
+    "prettier": "npx prettier --write"
   },
   "dependencies": {
     "@chainlink/contracts": "^0.3.1",
@@ -27,12 +28,7 @@
     "@ethersproject/providers": "^5.4.1",
     "@openzeppelin/contracts": "^4.4.0",
     "@openzeppelin/contracts-upgradeable": "^4.4.1",
-    "@typechain/ethers-v5": "^8.0.5",
-    "@typechain/hardhat": "^3.0.0",
-    "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.4.1",
-    "qrcode-terminal": "^0.12.0",
-    "typechain": "^6.0.5"
+    "ethers": "^5.4.1"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "yarn:hardhat-deploy-ethers@^0.3.0-beta.10",
@@ -40,6 +36,8 @@
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/hardhat-upgrades": "^1.12.1",
     "@openzeppelin/upgrades-core": "^1.10.0",
+    "@typechain/ethers-v5": "^8.0.5",
+    "@typechain/hardhat": "^3.0.0",
     "@types/jest": "^27.0.2",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.1",
@@ -55,17 +53,25 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-jest": "^24.7.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "ethereum-waffle": "^3.4.0",
     "hardhat": "^2.4.0",
     "hardhat-deploy": "^0.9.2",
     "hardhat-deploy-ethers": "^0.3.0-beta.10",
+    "husky": "^7.0.4",
     "jest": "^27.3.1",
     "node-watch": "^0.7.1",
-    "prettier": "^2.4.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.13",
+    "prettier": "^2.5.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
     "rlp": "^2.2.7",
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.3.0",
     "tsconfig-paths": "^3.11.0",
+    "typechain": "^6.0.5",
     "typescript": "^4.3.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "yarn run prettier"
+    }
   }
 }

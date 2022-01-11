@@ -1,21 +1,22 @@
-import { DeployFunction } from 'hardhat-deploy/types';
-import { HardhatRuntimeEnvironmentExtended } from 'types/hardhat-type-extensions';
+import { ethers } from "hardhat";
+ 
+const deployContract = async () => {
+  const [owner] = await ethers.getSigners();
 
-const func: DeployFunction = async (hre: HardhatRuntimeEnvironmentExtended) => {
-  const { getNamedAccounts, deployments } = hre;
-  const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const WArtist = await ethers.getContractFactory("contracts/WhizArt.sol:WhizArt");
+  const contract = await WArtist.deploy(owner.address);
+
+  console.log(contract.address);
   
-  await deploy('WhizArt', {
-    from: deployer,
-    args: [deployer],
-    log: true,
-  });
-
 };
-export default func;
-func.tags = ['WhizArt'];
 
+deployContract()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+  
 /*
 Tenderly verification
 let verification = await tenderly.verify({

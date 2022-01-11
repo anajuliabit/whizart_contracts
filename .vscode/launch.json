@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🧪 Tests",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["hardhat", "test", "--network", "localhost"],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+  ]
+}

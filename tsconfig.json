@@ -8,7 +8,10 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "typeRoots": ["node_modules/@types", "src/helpers/definitions"] /* List of folders to include type definitions from. */,
+    "typeRoots": [
+      "node_modules/@types",
+      "src/helpers/definitions"
+    ] /* List of folders to include type definitions from. */,
     "forceConsistentCasingInFileNames": true,
     "module": "commonjs",
     "moduleResolution": "Node",
@@ -20,13 +23,21 @@
     "baseUrl": ".",
     "outDir": "dist",
     "paths": {
-      "scripts/*": ["./scripts/*"],
+      "scripts/*": ["src/scripts/*"],
       "helpers/*": ["./helpers/*"],
       "contracts/*": ["./contracts/*"],
-      "tests/*": ["./tests/*"],
+      "tests/*": ["./tests/*"]
     }
   },
-  "include": ["types", "scripts", "test", "helpers", "./hardhat.config.ts", "deploy", "types"],
+  "include": [
+    "tasks",
+    "scripts",
+    "contracts",
+    "test",
+    "utils",
+    "types",
+    "deploy"
+  ],
   "exclude": ["node_modules"],
-  "files": ["./hardhat.config.ts", "types/__global.ts"]
+  "files": ["hardhat.config.ts"]
 }

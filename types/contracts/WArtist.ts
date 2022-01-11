@@ -62,10 +62,10 @@ export type BodyStructOutput = [
 
 export type ArtistStruct = {
   id: BigNumberish;
-  total_rarity: BigNumberish;
+  totalRarity: BigNumberish;
   creativity: BigNumberish;
-  paint_preference: BigNumberish;
-  color_slots: BigNumberish;
+  paintPreference: BigNumberish;
+  colorSlots: BigNumberish;
   body: BodyStruct;
 };
 
@@ -78,10 +78,10 @@ export type ArtistStructOutput = [
   BodyStructOutput
 ] & {
   id: BigNumber;
-  total_rarity: number;
+  totalRarity: number;
   creativity: number;
-  paint_preference: number;
-  color_slots: number;
+  paintPreference: number;
+  colorSlots: number;
   body: BodyStructOutput;
 };
 
@@ -105,19 +105,20 @@ export interface WArtistInterface extends utils.Interface {
     "getBodyPart(uint16)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getTokenDetailsByOwner(address)": FunctionFragment;
-    "getTokensByOwner(address)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "idCounter()": FunctionFragment;
-    "initialize(address,address,address)": FunctionFragment;
+    "initialize(address,address,address,bytes32,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mintStableCost()": FunctionFragment;
-    "mintWhitelist()": FunctionFragment;
+    "mintWhitelist(uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "pauseContract()": FunctionFragment;
     "paused()": FunctionFragment;
+    "randomNumberGenerated()": FunctionFragment;
     "rawFulfillRandomness(bytes32,uint256)": FunctionFragment;
+    "removeFromWhitelist(address[])": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
@@ -127,16 +128,14 @@ export interface WArtistInterface extends utils.Interface {
     "supplyAvailablePresale()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
     "tokenIds(address,uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "treasuryWallet()": FunctionFragment;
     "unpauseContract()": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
+    "whitelist(address)": FunctionFragment;
     "whitelistActive()": FunctionFragment;
   };
 
@@ -207,10 +206,6 @@ export interface WArtistInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "getTokensByOwner",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "grantRole",
     values: [BytesLike, string]
   ): string;
@@ -221,7 +216,7 @@ export interface WArtistInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "idCounter", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, string, string]
+    values: [string, string, string, BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -233,7 +228,7 @@ export interface WArtistInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mintWhitelist",
-    values?: undefined
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -246,8 +241,16 @@ export interface WArtistInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "randomNumberGenerated",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "rawFulfillRandomness",
     values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeFromWhitelist",
+    values: [string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
@@ -283,24 +286,12 @@ export interface WArtistInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "tokenByIndex",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenIds",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenOfOwnerByIndex",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalSupply",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom",
@@ -319,6 +310,7 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "upgradeToAndCall",
     values: [string, BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "whitelist", values: [string]): string;
   encodeFunctionData(
     functionFragment: "whitelistActive",
     values?: undefined
@@ -381,10 +373,6 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "getTokenDetailsByOwner",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getTokensByOwner",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "idCounter", data: BytesLike): Result;
@@ -409,7 +397,15 @@ export interface WArtistInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "randomNumberGenerated",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "rawFulfillRandomness",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeFromWhitelist",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -439,20 +435,8 @@ export interface WArtistInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenByIndex",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenIds", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenOfOwnerByIndex",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
     data: BytesLike
@@ -470,6 +454,7 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "upgradeToAndCall",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "whitelist", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "whitelistActive",
     data: BytesLike
@@ -654,10 +639,10 @@ export interface WArtist extends BaseContract {
     ): Promise<
       [BigNumber, number, number, number, number, BodyStructOutput] & {
         id: BigNumber;
-        total_rarity: number;
+        totalRarity: number;
         creativity: number;
-        paint_preference: number;
-        color_slots: number;
+        paintPreference: number;
+        colorSlots: number;
         body: BodyStructOutput;
       }
     >;
@@ -705,11 +690,6 @@ export interface WArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[ArtistStructOutput[]]>;
 
-    getTokensByOwner(
-      _owner: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
-
     grantRole(
       role: BytesLike,
       account: string,
@@ -727,9 +707,11 @@ export interface WArtist extends BaseContract {
     ): Promise<[BigNumber] & { _value: BigNumber }>;
 
     initialize(
-      treasuryWallet_: string,
-      _VRFCoordinator: string,
-      _LinkToken: string,
+      _treasureWallet: string,
+      vrfCoordinator: string,
+      linkToken: string,
+      _keyHash: BytesLike,
+      stableCoinAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -742,6 +724,7 @@ export interface WArtist extends BaseContract {
     mintStableCost(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mintWhitelist(
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -758,9 +741,16 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
+    randomNumberGenerated(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    removeFromWhitelist(
+      addresses: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -813,20 +803,9 @@ export interface WArtist extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     tokenIds(
       arg0: string,
       arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -834,8 +813,6 @@ export interface WArtist extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferFrom(
       from: string,
@@ -860,6 +837,8 @@ export interface WArtist extends BaseContract {
       data: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    whitelist(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     whitelistActive(overrides?: CallOverrides): Promise<[boolean]>;
   };
@@ -899,10 +878,10 @@ export interface WArtist extends BaseContract {
   ): Promise<
     [BigNumber, number, number, number, number, BodyStructOutput] & {
       id: BigNumber;
-      total_rarity: number;
+      totalRarity: number;
       creativity: number;
-      paint_preference: number;
-      color_slots: number;
+      paintPreference: number;
+      colorSlots: number;
       body: BodyStructOutput;
     }
   >;
@@ -950,11 +929,6 @@ export interface WArtist extends BaseContract {
     overrides?: CallOverrides
   ): Promise<ArtistStructOutput[]>;
 
-  getTokensByOwner(
-    _owner: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
-
   grantRole(
     role: BytesLike,
     account: string,
@@ -970,9 +944,11 @@ export interface WArtist extends BaseContract {
   idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
   initialize(
-    treasuryWallet_: string,
-    _VRFCoordinator: string,
-    _LinkToken: string,
+    _treasureWallet: string,
+    vrfCoordinator: string,
+    linkToken: string,
+    _keyHash: BytesLike,
+    stableCoinAddress: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -985,6 +961,7 @@ export interface WArtist extends BaseContract {
   mintStableCost(overrides?: CallOverrides): Promise<BigNumber>;
 
   mintWhitelist(
+    amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -998,9 +975,16 @@ export interface WArtist extends BaseContract {
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
+  randomNumberGenerated(overrides?: CallOverrides): Promise<BigNumber>;
+
   rawFulfillRandomness(
     requestId: BytesLike,
     randomness: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  removeFromWhitelist(
+    addresses: string[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1053,26 +1037,13 @@ export interface WArtist extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenByIndex(
-    index: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   tokenIds(
     arg0: string,
     arg1: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  tokenOfOwnerByIndex(
-    owner: string,
-    index: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   tokenURI(_tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferFrom(
     from: string,
@@ -1097,6 +1068,8 @@ export interface WArtist extends BaseContract {
     data: BytesLike,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
   whitelistActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1136,10 +1109,10 @@ export interface WArtist extends BaseContract {
     ): Promise<
       [BigNumber, number, number, number, number, BodyStructOutput] & {
         id: BigNumber;
-        total_rarity: number;
+        totalRarity: number;
         creativity: number;
-        paint_preference: number;
-        color_slots: number;
+        paintPreference: number;
+        colorSlots: number;
         body: BodyStructOutput;
       }
     >;
@@ -1187,11 +1160,6 @@ export interface WArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<ArtistStructOutput[]>;
 
-    getTokensByOwner(
-      _owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
-
     grantRole(
       role: BytesLike,
       account: string,
@@ -1207,9 +1175,11 @@ export interface WArtist extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
-      treasuryWallet_: string,
-      _VRFCoordinator: string,
-      _LinkToken: string,
+      _treasureWallet: string,
+      vrfCoordinator: string,
+      linkToken: string,
+      _keyHash: BytesLike,
+      stableCoinAddress: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1221,7 +1191,10 @@ export interface WArtist extends BaseContract {
 
     mintStableCost(overrides?: CallOverrides): Promise<BigNumber>;
 
-    mintWhitelist(overrides?: CallOverrides): Promise<boolean>;
+    mintWhitelist(
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -1231,9 +1204,16 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<boolean>;
 
+    randomNumberGenerated(overrides?: CallOverrides): Promise<BigNumber>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    removeFromWhitelist(
+      addresses: string[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1286,20 +1266,9 @@ export interface WArtist extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenIds(
       arg0: string,
       arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1307,8 +1276,6 @@ export interface WArtist extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferFrom(
       from: string,
@@ -1331,6 +1298,8 @@ export interface WArtist extends BaseContract {
       data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
     whitelistActive(overrides?: CallOverrides): Promise<boolean>;
   };
@@ -1516,11 +1485,6 @@ export interface WArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokensByOwner(
-      _owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     grantRole(
       role: BytesLike,
       account: string,
@@ -1536,9 +1500,11 @@ export interface WArtist extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
-      treasuryWallet_: string,
-      _VRFCoordinator: string,
-      _LinkToken: string,
+      _treasureWallet: string,
+      vrfCoordinator: string,
+      linkToken: string,
+      _keyHash: BytesLike,
+      stableCoinAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1551,6 +1517,7 @@ export interface WArtist extends BaseContract {
     mintStableCost(overrides?: CallOverrides): Promise<BigNumber>;
 
     mintWhitelist(
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1567,9 +1534,16 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
+    randomNumberGenerated(overrides?: CallOverrides): Promise<BigNumber>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    removeFromWhitelist(
+      addresses: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1622,20 +1596,9 @@ export interface WArtist extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenIds(
       arg0: string,
       arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1643,8 +1606,6 @@ export interface WArtist extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferFrom(
       from: string,
@@ -1669,6 +1630,8 @@ export interface WArtist extends BaseContract {
       data: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    whitelist(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     whitelistActive(overrides?: CallOverrides): Promise<BigNumber>;
   };
@@ -1752,11 +1715,6 @@ export interface WArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getTokensByOwner(
-      _owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     grantRole(
       role: BytesLike,
       account: string,
@@ -1772,9 +1730,11 @@ export interface WArtist extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
-      treasuryWallet_: string,
-      _VRFCoordinator: string,
-      _LinkToken: string,
+      _treasureWallet: string,
+      vrfCoordinator: string,
+      linkToken: string,
+      _keyHash: BytesLike,
+      stableCoinAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1787,6 +1747,7 @@ export interface WArtist extends BaseContract {
     mintStableCost(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mintWhitelist(
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1803,9 +1764,18 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    randomNumberGenerated(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeFromWhitelist(
+      addresses: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1860,20 +1830,9 @@ export interface WArtist extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     tokenIds(
       arg0: string,
       arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1881,8 +1840,6 @@ export interface WArtist extends BaseContract {
       _tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferFrom(
       from: string,
@@ -1906,6 +1863,11 @@ export interface WArtist extends BaseContract {
       newImplementation: string,
       data: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    whitelist(
+      arg0: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     whitelistActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;

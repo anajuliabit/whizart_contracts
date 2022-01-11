@@ -1,20 +1,28 @@
-import { ethers, upgrades } from 'hardhat';
+import { ethers, getChainId, upgrades } from "hardhat";
+import { WArtist__factory } from "types/contracts";
+import { networkConfig } from "utils/helper";
 
-const deployContract = async() => {
-  
-  const WArtist = await ethers.getContractFactory("contracts/WArtist.sol:WArtist");
-  const contract = await upgrades.deployProxy(WArtist, [
-    // treasury address
-    "0x191FE20e73226EF6392E9b8332eFE7F7C457e82D", 
-    // VRF rinkenby address
-    "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B", 
-    // LINK rinkenby address
-    "0x01BE23585060835E02B77ef475b0Cc51aA1e0709",
-], { kind: 'uups' });
+const deployContract = async () => {
+  const contractFactory: WArtist__factory = await ethers.getContractFactory(
+    "contracts/WArtist.sol:WArtist"
+  );
+
+  const chainId = await getChainId();
+
+  const { stableCoinAddress, linkToken, vrfCoordinator, keyHash } =
+    networkConfig[chainId];
+  const [owner] = await ethers.getSigners();
+
+  const contract = await upgrades.deployProxy(
+    contractFactory,
+    [owner.address, vrfCoordinator, linkToken, keyHash, stableCoinAddress],
+    {
+      kind: "uups",
+    }
+  );
 
   await contract.deployed();
-  console.log('wArtist', contract.address);
-
+  console.log("wArtist", contract.address);
 };
 
 deployContract()

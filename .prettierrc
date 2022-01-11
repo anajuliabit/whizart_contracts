@@ -1,10 +1,18 @@
 {
-   "singleQuote": true,
-   "trailingComma": "es5",
-   "requirePragma": false,
-   "arrowParens": "always",
-   "jsxBracketSameLine": true,
-   "tabWidth": 2,
-   "printWidth": 160,
-   "endOfLine": "lf"
+  "overrides": [
+    {
+      "files": ["*.sol"],
+      "options": {
+        "singleQuote": false,
+        "requirePragma": false,
+        "tabWidth": 4,
+        "printWidth": 120,
+        "bracketSameLine": true,
+        "bracketSpacing": true,
+        "explicitTypes": "always",
+        "useTabs": true
+      }
+    }
+  ],
+  "plugins": ["eslint-plugin-prettier", "prettier-plugin-solidity"]
 }

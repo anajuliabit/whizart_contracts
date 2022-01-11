@@ -5,7 +5,14 @@
     "sourceType": "module", // Allows for the use of imports,
     "tsconfigRootDir": ".",
     "project": ["./tsconfig.json"],
-    "projectFolderIgnoreList": ["node_modules", "coverage", "generated", ".vscode", ".github"]
+    "projectFolderIgnoreList": [
+      "node_modules",
+      "coverage",
+      "generated",
+      ".vscode",
+      ".github",
+      "contracts"
+    ]
   },
   "env": {
     "browser": true,
@@ -28,7 +35,6 @@
     "prettier/prettier": 0,
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-empty-function": "warn",
-    "no-unused-vars": 0,
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-use-before-define": ["error"],
     "@typescript-eslint/no-unsafe-member-access": 0,
@@ -36,10 +42,12 @@
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/no-unsafe-call": "warn",
     "@typescript-eslint/unbound-method": 0,
-    "@typescript-eslint/restrict-template-expressions": ["error", { "allowBoolean": true, "allowNumber": true }],
+    "@typescript-eslint/restrict-template-expressions": [
+      "error",
+      { "allowBoolean": true, "allowNumber": true }
+    ],
     "no-param-reassign": "error",
     "no-duplicate-imports": "warn",
-    //"dynamic-import-chunkname": "warn",
     "import/order": [
       "warn",
       {
@@ -75,5 +83,13 @@
     "object-curly-newline": 0,
     "no-shadow": 0,
     "react/jsx-filename-extension": "off"
+    // "overrides": [
+    //   {
+    //     "files": ["*.test.ts"],
+    //     "rules": {
+    //       "no-unused-expressions": 0
+    //     }
+    //   }
+    // ]
   }
 }
