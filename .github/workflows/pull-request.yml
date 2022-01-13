@@ -1,45 +1,45 @@
-name: Pull Request CI
+# name: Pull Request CI
 
-on:
-  workflow_dispatch: 
-  push:
-    branches: [develop, main]
-  pull_request:
-    types: [opened, reopened, ready_for_review, synchronize]
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches: [develop, main]
+#   pull_request:
+#     types: [opened, reopened, ready_for_review, synchronize]
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+#     strategy:
+#       matrix:
+#         node-version: [14.x, 16.x]
+#         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: 'cache'
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.yarn
-            ~/node_modules
-            **/node_modules/**
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-      - run: yarn install --immutable
-      
-      - name: 'hardhat compile'  
-        run: |
-          yarn compile --force
-    #  - run: yarn hardhat:test
-    #  - name: Publish Unit Test Results
-    #    uses: EnricoMi/publish-unit-test-result-action@v1
-    #    if: always()
-    #    with:
-    #      files: testresult.xml
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Use Node.js ${{ matrix.node-version }}
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: ${{ matrix.node-version }}
+#       - name: 'cache'
+#         uses: actions/cache@v2
+#         with:
+#           path: |
+#             ~/.yarn
+#             ~/node_modules
+#             **/node_modules/**
+#           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+#           restore-keys: |
+#             ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+#       - run: yarn install --immutable
+
+#       - name: 'hardhat compile'
+#         run: |
+#           yarn compile --force
+#  - run: yarn hardhat:test
+#  - name: Publish Unit Test Results
+#    uses: EnricoMi/publish-unit-test-result-action@v1
+#    if: always()
+#    with:
+#      files: testresult.xml
