@@ -7,8 +7,6 @@ import "@tenderly/hardhat-tenderly";
 import "@typechain/hardhat";
 import type { Contract, ContractFactory } from "ethers";
 import { ethers } from "hardhat";
-import "hardhat-deploy";
-import "hardhat-deploy/src/type-extensions";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 export interface Options extends ValidationOptions {

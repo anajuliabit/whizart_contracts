@@ -7,6 +7,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
 import "hardhat-deploy";
+import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "solidity-coverage";
 import "tsconfig-paths/register";
@@ -24,13 +25,19 @@ const defaultNetwork = "hardhat";
 const config: HardhatUserConfig = {
   defaultNetwork,
   namedAccounts: {
-    deployer: {
-      default: 0, // here this will by default take the first account as deployer
-    },
+    deployer: 0,
+    treasury: 0,
+    beneficiary: 1,
   },
   networks: {
+    hardhat: {
+      gasPrice: 8000000000,
+      gas: 2100000,
+    },
     localhost: {
       url: "http://localhost:8545",
+      gasPrice: 8000000000,
+      gas: 2100000,
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${
@@ -40,8 +47,8 @@ const config: HardhatUserConfig = {
         `${process.env.RINKEBY_DEPLOYER_PRIV_KEY ?? ""}`,
         `${process.env.RINKEBY_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
       ],
-      // gasPrice: 8000000000,
-      // gas: 2100000
+      gasPrice: 8000000000,
+      gas: 2100000,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${

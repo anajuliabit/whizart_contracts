@@ -32,57 +32,20 @@ export type BodyPartStructOutput = [number, string, number, number] & {
   category: number;
 };
 
-export type BodyStruct = {
-  arm: BigNumberish;
-  eye: BigNumberish;
-  mouth: BigNumberish;
-  hair: BigNumberish;
-  head: BigNumberish;
-  outfit: BigNumberish;
-  soul: BigNumberish;
-};
-
-export type BodyStructOutput = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number
-] & {
-  arm: number;
-  eye: number;
-  mouth: number;
-  hair: number;
-  head: number;
-  outfit: number;
-  soul: number;
-};
-
 export type ArtistStruct = {
   id: BigNumberish;
-  totalRarity: BigNumberish;
+  rarity: BigNumberish;
   creativity: BigNumberish;
-  paintPreference: BigNumberish;
+  paintType: BigNumberish;
   colorSlots: BigNumberish;
-  body: BodyStruct;
 };
 
-export type ArtistStructOutput = [
-  BigNumber,
-  number,
-  number,
-  number,
-  number,
-  BodyStructOutput
-] & {
+export type ArtistStructOutput = [BigNumber, number, number, number, number] & {
   id: BigNumber;
-  totalRarity: number;
+  rarity: number;
   creativity: number;
-  paintPreference: number;
+  paintType: number;
   colorSlots: number;
-  body: BodyStructOutput;
 };
 
 export interface WArtistInterface extends utils.Interface {
@@ -92,7 +55,7 @@ export interface WArtistInterface extends utils.Interface {
     "DESIGNER_ROLE()": FunctionFragment;
     "PAUSER_ROLE()": FunctionFragment;
     "UPGRADER_ROLE()": FunctionFragment;
-    "addBodyPart(uint16,string,uint16,uint8)": FunctionFragment;
+    "addBodyPart(uint16,string,uint8,uint8)": FunctionFragment;
     "addToWhitelist(address[])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "artists(uint256)": FunctionFragment;
@@ -103,6 +66,7 @@ export interface WArtistInterface extends utils.Interface {
     "changeTreasuryWallet(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getBodyPart(uint16)": FunctionFragment;
+    "getBodyPartCounts(uint8)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getTokenDetailsByOwner(address)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -116,13 +80,13 @@ export interface WArtistInterface extends utils.Interface {
     "ownerOf(uint256)": FunctionFragment;
     "pauseContract()": FunctionFragment;
     "paused()": FunctionFragment;
-    "randomNumberGenerated()": FunctionFragment;
     "rawFulfillRandomness(bytes32,uint256)": FunctionFragment;
     "removeFromWhitelist(address[])": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setRequest(bytes32)": FunctionFragment;
     "setStableMintCost(uint256)": FunctionFragment;
     "stableCoin()": FunctionFragment;
     "supplyAvailablePresale()": FunctionFragment;
@@ -198,6 +162,10 @@ export interface WArtistInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getBodyPartCounts",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
   ): string;
@@ -241,10 +209,6 @@ export interface WArtistInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "randomNumberGenerated",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "rawFulfillRandomness",
     values: [BytesLike, BigNumberish]
   ): string;
@@ -267,6 +231,10 @@ export interface WArtistInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRequest",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setStableMintCost",
@@ -366,6 +334,10 @@ export interface WArtistInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getBodyPartCounts",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
@@ -397,10 +369,6 @@ export interface WArtistInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "randomNumberGenerated",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "rawFulfillRandomness",
     data: BytesLike
   ): Result;
@@ -421,6 +389,7 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setRequest", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setStableMintCost",
     data: BytesLike
@@ -637,13 +606,12 @@ export interface WArtist extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, number, number, number, number, BodyStructOutput] & {
+      [BigNumber, number, number, number, number] & {
         id: BigNumber;
-        totalRarity: number;
+        rarity: number;
         creativity: number;
-        paintPreference: number;
+        paintType: number;
         colorSlots: number;
-        body: BodyStructOutput;
       }
     >;
 
@@ -682,6 +650,11 @@ export interface WArtist extends BaseContract {
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BodyPartStructOutput]>;
+
+    getBodyPartCounts(
+      category: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -741,8 +714,6 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
-    randomNumberGenerated(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
@@ -784,6 +755,11 @@ export interface WArtist extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setRequest(
+      requestId: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -876,13 +852,12 @@ export interface WArtist extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, number, number, number, number, BodyStructOutput] & {
+    [BigNumber, number, number, number, number] & {
       id: BigNumber;
-      totalRarity: number;
+      rarity: number;
       creativity: number;
-      paintPreference: number;
+      paintType: number;
       colorSlots: number;
-      body: BodyStructOutput;
     }
   >;
 
@@ -921,6 +896,11 @@ export interface WArtist extends BaseContract {
     id: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BodyPartStructOutput>;
+
+  getBodyPartCounts(
+    category: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -975,8 +955,6 @@ export interface WArtist extends BaseContract {
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
-  randomNumberGenerated(overrides?: CallOverrides): Promise<BigNumber>;
-
   rawFulfillRandomness(
     requestId: BytesLike,
     randomness: BigNumberish,
@@ -1018,6 +996,11 @@ export interface WArtist extends BaseContract {
   setApprovalForAll(
     operator: string,
     approved: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setRequest(
+    requestId: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1107,13 +1090,12 @@ export interface WArtist extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, number, number, number, number, BodyStructOutput] & {
+      [BigNumber, number, number, number, number] & {
         id: BigNumber;
-        totalRarity: number;
+        rarity: number;
         creativity: number;
-        paintPreference: number;
+        paintType: number;
         colorSlots: number;
-        body: BodyStructOutput;
       }
     >;
 
@@ -1152,6 +1134,11 @@ export interface WArtist extends BaseContract {
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BodyPartStructOutput>;
+
+    getBodyPartCounts(
+      category: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -1204,8 +1191,6 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<boolean>;
 
-    randomNumberGenerated(overrides?: CallOverrides): Promise<BigNumber>;
-
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
@@ -1249,6 +1234,11 @@ export interface WArtist extends BaseContract {
       approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    setRequest(
+      requestId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     setStableMintCost(
       value: BigNumberish,
@@ -1475,6 +1465,11 @@ export interface WArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getBodyPartCounts(
+      category: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getRoleAdmin(
       role: BytesLike,
       overrides?: CallOverrides
@@ -1534,8 +1529,6 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
-    randomNumberGenerated(overrides?: CallOverrides): Promise<BigNumber>;
-
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
@@ -1577,6 +1570,11 @@ export interface WArtist extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setRequest(
+      requestId: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1705,6 +1703,11 @@ export interface WArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getBodyPartCounts(
+      category: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getRoleAdmin(
       role: BytesLike,
       overrides?: CallOverrides
@@ -1764,10 +1767,6 @@ export interface WArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    randomNumberGenerated(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
@@ -1809,6 +1808,11 @@ export interface WArtist extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRequest(
+      requestId: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -1,7 +1,6 @@
 import { ethers, getChainId } from "hardhat";
-
 import { ERC20 } from "../types/contracts";
-import { NetworkConfig } from "../types/network";
+import { NetworkConfig } from "../types/network-config";
 
 type Networks = { [networkId: string]: NetworkConfig };
 
@@ -23,6 +22,10 @@ export const networkConfig: Networks = {
     jobId: "29fa9aa13bf1468788b7cc4a500a45b8",
     fundAmount: "1000000000000000000",
     keepersUpdateInterval: "30",
+    vrfCoordinator: "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B",
+    linkToken: "0x01be23585060835e02b77ef475b0cc51aa1e0709",
+    stableCoinAddress: "0x5eD8BD53B0c3fa3dEaBd345430B1A3a6A4e8BD7C",
+    whaleStableCoinAddress: "0x5eD8BD53B0c3fa3dEaBd345430B1A3a6A4e8BD7C",
   },
   42: {
     name: "kovan",
