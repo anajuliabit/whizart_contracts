@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -24,7 +23,6 @@ contract WArtist is
 	UUPSUpgradeable,
 	VRFConsumerBaseUpgradeable
 {
-	using SafeMathUpgradeable for uint256;
 	using SafeERC20Upgradeable for IERC20Upgradeable;
 	using Counters for Counters.Counter;
 
@@ -51,15 +49,25 @@ contract WArtist is
 		SOUL
 	}
 
+	enum Rarity {
+		NOVICE,
+		APPRENTICE,
+		JOURNEYMAN,
+		MASTER,
+		GRANDMASTER
+	}
+
 	struct BodyPart {
 		uint16 id;
 		string name;
-		uint16 rarity;
+		Rarity rarity;
 		BodyCategory category;
 	}
 
 	mapping(uint16 => BodyPart) public bodyParts;
-	mapping(uint256 => uint16) private bodyPartCounts;
+
+	// total of parts in each category
+	mapping(BodyCategory => uint16) private bodyPartCounts;
 
 	struct Body {
 		uint16 arm;
@@ -73,12 +81,11 @@ contract WArtist is
 
 	struct Artist {
 		uint256 id;
-		// Varies from 1 to 5, body part media
-		uint8 totalRarity;
+		Rarity rarity;
 		// Initial level: 1, Max level: 10
 		uint8 creativity;
 		// Varies from 1 to 5
-		uint8 paintPreference;
+		uint8 paintType;
 		// Max: 6
 		uint8 colorSlots;
 		Body body;
@@ -96,7 +103,6 @@ contract WArtist is
 
 	mapping(bytes32 => address) private requestToSender;
 	mapping(bytes32 => uint256) private requestToTokenId;
-	mapping(bytes32 => Artist) private requestToArtist;
 
 	//@TODO change to IERC20Upgradeable if uses DAI on Polygon
 	IERC20 public stableCoin;
@@ -106,8 +112,6 @@ contract WArtist is
 	bool public whitelistActive;
 	uint8 private preSaleLimit;
 	mapping(address => bool) public whitelist;
-
-	uint256 public randomNumberGenerated;
 
 	function initialize(
 		address _treasureWallet,
@@ -122,11 +126,11 @@ contract WArtist is
 		__AccessControl_init();
 		__UUPSUpgradeable_init();
 
-		_setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-		_setupRole(PAUSER_ROLE, msg.sender);
-		_setupRole(UPGRADER_ROLE, msg.sender);
-		_setupRole(DESIGNER_ROLE, msg.sender);
-		_setupRole(BACKEND_ROLE, msg.sender);
+		_setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+		_setupRole(PAUSER_ROLE, _msgSender());
+		_setupRole(UPGRADER_ROLE, _msgSender());
+		_setupRole(DESIGNER_ROLE, _msgSender());
+		_setupRole(BACKEND_ROLE, _msgSender());
 
 		baseURI = "https://api.whizart.co/metadata/";
 		whitelistActive = true;
@@ -144,12 +148,12 @@ contract WArtist is
 	function mintWhitelist(uint256 amount) external whenNotPaused nonReentrant returns (bool) {
 		require(whitelistActive == true, "Whitelist is not active");
 		require(supplyAvailablePresale > 0, "All presale Artists are sold");
-		address to = msg.sender;
+		address to = _msgSender();
 		require(whitelist[to] == true, "Not whitelisted");
 		require(tokenIds[to].length + 1 <= preSaleLimit, "User buy limit reached");
-		uint256 allowance = stableCoin.allowance(msg.sender, address(this));
+		uint256 allowance = stableCoin.allowance(_msgSender(), address(this));
 		require(allowance >= amount, "Check the token allowance");
-		require(stableCoin.balanceOf(msg.sender) >= mintStableCost, "Insuficient funds");
+		require(stableCoin.balanceOf(_msgSender()) >= mintStableCost, "Insuficient funds");
 
 		supplyAvailablePresale = supplyAvailablePresale - 1;
 		stableCoin.transferFrom(to, treasuryWallet, mintStableCost);
@@ -179,35 +183,36 @@ contract WArtist is
 	}
 
 	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
-		randomNumberGenerated = randomNumber;
-		uint8 creativity = uint8((randomNumber.mod(10000)).mod(10));
-		uint8 paintType = uint8((randomNumber.mod(1000000)).mod(5));
-		Body memory body = generateBodyByRandom(randomNumber);
-
-		uint8 totalRarity = uint8(
-			body.arm + body.eye + body.hair + body.head + body.mouth + body.outfit + body.soul / 7
-		);
 		uint256 id = requestToTokenId[requestId];
-
-		Artist memory artist = Artist(id, totalRarity, creativity, paintType, 2, body);
-		artists[id] = artist;
 		address sender = requestToSender[requestId];
+
+		Body memory body = Body(
+			uint16(((randomNumber % 10000) * bodyPartCounts[BodyCategory.ARM]) / 10000 + 1),
+			uint16(((randomNumber % 100000) * bodyPartCounts[BodyCategory.EYE]) / 100000 + 1),
+			uint16(((randomNumber % 1000000) * bodyPartCounts[BodyCategory.HAIR]) / 1000000 + 1),
+			uint16(((randomNumber % 10000000) * bodyPartCounts[BodyCategory.HEAD]) / 10000000 + 1),
+			uint16(((randomNumber % 100000000) * bodyPartCounts[BodyCategory.MOUTH]) / 100000000 + 1),
+			uint16(((randomNumber % 1000000000) * bodyPartCounts[BodyCategory.OUTFIT]) / 1000000000 + 1),
+			uint16(((randomNumber % 10000000000) * bodyPartCounts[BodyCategory.SOUL]) / 10000000000 + 1)
+		);
+
+		Rarity totalRarity = Rarity(
+			(body.arm + body.eye + body.hair + body.head + body.mouth + body.outfit + body.soul) / 7
+		);
+
 		_safeMint(sender, id);
+		Artist memory artist = Artist(
+			id,
+			totalRarity,
+			uint8(((randomNumber % 100) * 5) / 100 + 1),
+			uint8(((randomNumber % 1000) * 5) / 1000 + 1),
+			2,
+			body
+		);
+		tokenIds[sender].push(id);
+		artists[id] = artist;
 
 		emit ArtistMinted(requestId, sender, id);
-	}
-
-	function generateBodyByRandom(uint256 randomNumber) internal view returns (Body memory) {
-		return
-			Body(
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.ARM)])),
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.EYE)])),
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.HAIR)])),
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.HEAD)])),
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.MOUTH)])),
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.OUTFIT)])),
-				uint8((randomNumber.mod(10000000000)).mod(bodyPartCounts[uint8(BodyCategory.SOUL)]))
-			);
 	}
 
 	function _beforeTokenTransfer(
@@ -215,8 +220,16 @@ contract WArtist is
 		address to,
 		uint256 tokenId
 	) internal override whenNotPaused {
-		require(false, "Temporarily disabled");
 		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
+	}
+
+	function _transfer(
+		address from,
+		address to,
+		uint256 tokenId
+	) internal override {
+		require(false, "Temporarily disabled");
+		ERC721Upgradeable._transfer(from, to, tokenId);
 	}
 
 	function tokenURI(uint256 _tokenId) public view override returns (string memory) {
@@ -231,18 +244,21 @@ contract WArtist is
 	function addBodyPart(
 		uint16 id,
 		string calldata name,
-		uint16 rarity,
+		Rarity rarity,
 		BodyCategory category
 	) external onlyRole(DESIGNER_ROLE) {
-		require(rarity > 0 && rarity <= 5, "Rarity out of range");
 		BodyPart memory bodyPart = BodyPart(id, name, rarity, category);
 		bodyParts[id] = bodyPart;
-		bodyPartCounts[uint8(category)] += 1;
+		bodyPartCounts[category] += 1;
 		emit BodyPartAdded(bodyPart);
 	}
 
 	function getBodyPart(uint16 id) external view returns (BodyPart memory) {
 		return bodyParts[id];
+	}
+
+	function getBodyPartCounts(BodyCategory category) external view returns (uint16) {
+		return bodyPartCounts[category];
 	}
 
 	function addToWhitelist(address[] memory addresses) external onlyRole(BACKEND_ROLE) {

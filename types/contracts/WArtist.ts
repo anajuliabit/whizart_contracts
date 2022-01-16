@@ -32,20 +32,57 @@ export type BodyPartStructOutput = [number, string, number, number] & {
   category: number;
 };
 
+export type BodyStruct = {
+  arm: BigNumberish;
+  eye: BigNumberish;
+  mouth: BigNumberish;
+  hair: BigNumberish;
+  head: BigNumberish;
+  outfit: BigNumberish;
+  soul: BigNumberish;
+};
+
+export type BodyStructOutput = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
+] & {
+  arm: number;
+  eye: number;
+  mouth: number;
+  hair: number;
+  head: number;
+  outfit: number;
+  soul: number;
+};
+
 export type ArtistStruct = {
   id: BigNumberish;
   rarity: BigNumberish;
   creativity: BigNumberish;
   paintType: BigNumberish;
   colorSlots: BigNumberish;
+  body: BodyStruct;
 };
 
-export type ArtistStructOutput = [BigNumber, number, number, number, number] & {
+export type ArtistStructOutput = [
+  BigNumber,
+  number,
+  number,
+  number,
+  number,
+  BodyStructOutput
+] & {
   id: BigNumber;
   rarity: number;
   creativity: number;
   paintType: number;
   colorSlots: number;
+  body: BodyStructOutput;
 };
 
 export interface WArtistInterface extends utils.Interface {
@@ -86,7 +123,6 @@ export interface WArtistInterface extends utils.Interface {
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setRequest(bytes32)": FunctionFragment;
     "setStableMintCost(uint256)": FunctionFragment;
     "stableCoin()": FunctionFragment;
     "supplyAvailablePresale()": FunctionFragment;
@@ -231,10 +267,6 @@ export interface WArtistInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setRequest",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setStableMintCost",
@@ -389,7 +421,6 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setRequest", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setStableMintCost",
     data: BytesLike
@@ -606,12 +637,13 @@ export interface WArtist extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, number, number, number, number] & {
+      [BigNumber, number, number, number, number, BodyStructOutput] & {
         id: BigNumber;
         rarity: number;
         creativity: number;
         paintType: number;
         colorSlots: number;
+        body: BodyStructOutput;
       }
     >;
 
@@ -758,11 +790,6 @@ export interface WArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setRequest(
-      requestId: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setStableMintCost(
       value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -852,12 +879,13 @@ export interface WArtist extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, number, number, number, number] & {
+    [BigNumber, number, number, number, number, BodyStructOutput] & {
       id: BigNumber;
       rarity: number;
       creativity: number;
       paintType: number;
       colorSlots: number;
+      body: BodyStructOutput;
     }
   >;
 
@@ -999,11 +1027,6 @@ export interface WArtist extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setRequest(
-    requestId: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setStableMintCost(
     value: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1090,12 +1113,13 @@ export interface WArtist extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, number, number, number, number] & {
+      [BigNumber, number, number, number, number, BodyStructOutput] & {
         id: BigNumber;
         rarity: number;
         creativity: number;
         paintType: number;
         colorSlots: number;
+        body: BodyStructOutput;
       }
     >;
 
@@ -1234,11 +1258,6 @@ export interface WArtist extends BaseContract {
       approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    setRequest(
-      requestId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<string>;
 
     setStableMintCost(
       value: BigNumberish,
@@ -1573,11 +1592,6 @@ export interface WArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setRequest(
-      requestId: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setStableMintCost(
       value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1808,11 +1822,6 @@ export interface WArtist extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setRequest(
-      requestId: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

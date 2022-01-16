@@ -3,7 +3,7 @@ import { expect, use } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, getChainId, upgrades } from "hardhat";
 import { ERC20, WArtist } from "types/contracts";
-import { networkConfig } from "utils/helper";
+import { networkConfig } from "utils/network";
 
 // Run the tests with a copy of rinkeby network
 // npx ganache-cli -f https://rinkeby.infura.io/v3/${INFURA_KEY} -p 8545 --unlock 0xf50aced0016256bc3aee3b4dca2170c9c8cd3abb
@@ -49,13 +49,5 @@ describe("WArtist", function () {
   it("Should add address to whitelist", async function () {
     await contract.addToWhitelist([user.address]);
     expect(await contract.whitelist(user.address)).eq(true);
-  });
-
-  it.skip("Should mint Artist", async () => {
-    await stableCoin.connect(user).approve(contract.address, "1000000000");
-    const mint = await contract.connect(user).mintWhitelist("500000000");
-    await mint.wait();
-    console.log(Number(await stableCoin.balanceOf(user.address)));
-    expect(await contract.balanceOf(user.address)).eq(1);
   });
 });

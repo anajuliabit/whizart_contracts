@@ -1,66 +1,85 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect } from "chai";
-import { deployments, ethers, getChainId, network } from "hardhat";
-
+import { ethers, getChainId, getNamedAccounts, network } from "hardhat";
+import { Proxy } from "types/proxy";
 import { ERC20, WArtist } from "../../types/contracts";
-import { Proxy } from "../../types/proxy";
-import { autoFundCheck, networkConfig } from "../../utils/helper";
+import { networkConfig } from "../../utils/network";
+
+// Run this test only in development network
+// It's necessary that the deployed contract has LINK (faucet)
+// It's necessary that the beneficiary address has stable coin tokens
 
 describe("WArtist Integration Tests", function () {
   let contract: WArtist;
   let stableCoin: ERC20;
-  let chainId: string;
   let owner: SignerWithAddress, user: SignerWithAddress;
+  let decimals: number;
+  this.beforeAll(async () => {
+    if (network.name !== "rinkeby") {
+      throw new Error("Run this test only in development network");
+    }
 
-  beforeEach(async () => {
-    chainId = await getChainId();
+    const chainId = await getChainId();
     const { stableCoinAddress } = networkConfig[chainId];
     if (!stableCoinAddress) {
       throw new Error("Missing address for this network");
     }
 
-    [owner, user] = await ethers.getSigners();
+    const { beneficiary, deployer } = await getNamedAccounts();
+    owner = await ethers.getSigner(deployer);
+    user = await ethers.getSigner(beneficiary);
 
-    const deployment = await deployments.get("WArtist");
-
-    contract = await ethers.getContractAt("Wartist", deployment.address, owner);
+    const WArtistContract: WArtist = await ethers.getContractAt(
+      "WArtist",
+      "0x559248F8fCCa69043CFf80dF2478E5BF163Ac770"
+    );
 
     // delegates call to proxy contract
     const proxy = (await import(
-      `.openzeppellin/${network.name}.json`
+      `../../.openzeppelin/${network.name}.json`
     )) as Proxy;
-    contract.attach(proxy.proxies[-1].address);
+    contract = WArtistContract.attach(
+      proxy.proxies[proxy.proxies.length - 1].address
+    );
 
     stableCoin = await ethers.getContractAt("ERC20", stableCoinAddress, user);
-    await stableCoin.approve(contract.address, "1000000000");
+    decimals = await stableCoin.decimals();
+    console.log(contract.address);
+  });
 
-    const contractHasLink = await autoFundCheck(
-      contract.address,
-      network.name,
-      networkConfig[chainId].linkToken as string
-    );
-    if (!contractHasLink) {
-      throw new Error("Contract has no link token");
-    }
+  it("Shoud add to whitelist", async () => {
+    const addToWhitelist = await contract
+      .connect(owner)
+      .addToWhitelist([user.address]);
+    await addToWhitelist.wait();
+
+    const isWhitelisted = await contract.whitelist(user.address);
+
+    expect(isWhitelisted).eq(true);
+  });
+
+  it("Should approve WArtist to spender user tokens", async () => {
+    const approve = await stableCoin
+      .connect(user)
+      .approve(contract.address, ethers.utils.parseUnits("10000000", decimals));
+    await approve.wait();
+
+    expect(
+      Number(await stableCoin.allowance(user.address, contract.address))
+    ).least(Number(ethers.utils.parseUnits("10000000", decimals)));
   });
 
   it("Should successfully mint a Artist", async () => {
-    const addToWhitelist = await contract.addToWhitelist([user.address]);
-    await addToWhitelist.wait();
-
-    await stableCoin.connect(user).approve(contract.address, "1000000000");
-
+    this.timeout(15000);
     const transaction = await contract
       .connect(user)
-      .mintWhitelist("500000000000000000000");
+      .mintWhitelist(ethers.utils.parseUnits("500", decimals));
     const txReceipt = await transaction.wait();
     const events = txReceipt.events;
     console.log(events);
 
     // wait 60 secs for oracle to callback
     await new Promise((resolve) => setTimeout(resolve, 60000));
-
-    console.log(await contract.randomNumberGenerated());
     expect(await contract.balanceOf(user.address)).eq(1);
   });
 });
