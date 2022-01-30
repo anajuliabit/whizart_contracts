@@ -11,8 +11,10 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/VRFConsumerBaseUpgradeable.sol";
+import "./utils/Whitelist.sol";
+import "hardhat/console.sol";
 
 contract WArtist is
 	Initializable,
@@ -21,10 +23,10 @@ contract WArtist is
 	AccessControlUpgradeable,
 	ReentrancyGuardUpgradeable,
 	UUPSUpgradeable,
-	VRFConsumerBaseUpgradeable
+	VRFConsumerBaseUpgradeable,
+	Whitelist
 {
-	using SafeERC20Upgradeable for IERC20Upgradeable;
-	using Counters for Counters.Counter;
+	using CountersUpgradeable for CountersUpgradeable.Counter;
 
 	bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 	bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -32,22 +34,13 @@ contract WArtist is
 	bytes32 public constant BACKEND_ROLE = keccak256("BACKEND_ROLE");
 
 	event ArtistMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
-	event PriceChanged(uint256 indexed price);
-	event BodyPartAdded(BodyPart bodyPart);
-
-	Counters.Counter public idCounter;
-	string public baseURI;
-	address public treasuryWallet;
-
-	enum BodyCategory {
-		ARM,
-		EYE,
-		HAIR,
-		HEAD,
-		MOUTH,
-		OUTFIT,
-		SOUL
-	}
+	event PriceChanged(uint256 _old, uint256 _new);
+	event PaymentReceived(address sender, uint256 amount);
+	event BaseURIChanged(string _old, string _new);
+	event MintActive(bool _old, bool _new);
+	event MintSizeChanged(uint256 _old, uint256 _new);
+	event SupplyAvailableChanged(uint256 _old, uint256 _new);
+	event CalledRandomGenerator(bytes32 requestId);
 
 	enum Rarity {
 		NOVICE,
@@ -57,74 +50,59 @@ contract WArtist is
 		GRANDMASTER
 	}
 
-	struct BodyPart {
-		uint16 id;
-		string name;
-		Rarity rarity;
-		BodyCategory category;
-	}
-
-	mapping(uint16 => BodyPart) public bodyParts;
-
-	// total of parts in each category
-	mapping(BodyCategory => uint16) private bodyPartCounts;
-
-	struct Body {
-		uint16 arm;
-		uint16 eye;
-		uint16 mouth;
-		uint16 hair;
-		uint16 head;
-		uint16 outfit;
-		uint16 soul;
+	enum PaintType {
+		GRAPHITTI,
+		ACRILIC,
+		INK,
+		FRESCO,
+		WATER_COLOR
 	}
 
 	struct Artist {
-		uint256 id;
 		Rarity rarity;
+		PaintType paintType;
 		// Initial level: 1, Max level: 10
 		uint8 creativity;
-		// Varies from 1 to 5
-		uint8 paintType;
 		// Max: 6
 		uint8 colorSlots;
-		Body body;
 	}
 
-	// Mapping from owner address to token ID.
+	CountersUpgradeable.Counter public idCounter;
+	string public baseURI;
+
+	/// @notice Mapping from owner address to token ID
 	mapping(address => uint256[]) public tokenIds;
 
-	// Mapping from token ID to token details.
+	/// @notice Mapping from token ID to token details
 	mapping(uint256 => Artist) public artists;
+
+	mapping(uint256 => string) private tokenURIs;
+
+	/// @notice URI's available of artists of each rarity
+	mapping(Rarity => string[]) public artistsURIByRarity;
 
 	// Chainlink VRF variables
 	bytes32 private keyHash;
 	uint256 private fee;
-
 	mapping(bytes32 => address) private requestToSender;
 	mapping(bytes32 => uint256) private requestToTokenId;
 
-	//@TODO change to IERC20Upgradeable if uses DAI on Polygon
-	IERC20 public stableCoin;
-
-	uint256 public mintStableCost;
-	uint16 public supplyAvailablePresale;
-	bool public whitelistActive;
-	uint8 private preSaleLimit;
-	mapping(address => bool) public whitelist;
+	uint256 private mintSize;
+	bool public mintActive;
+	uint256 public mintPrice;
+	uint256 public supplyAvailable;
 
 	function initialize(
-		address _treasureWallet,
 		address vrfCoordinator,
 		address linkToken,
-		bytes32 _keyHash,
-		address stableCoinAddress
+		bytes32 _keyHash
 	) public initializer {
 		__ERC721_init("Whizart Artist", "WArtist");
 		__VRFConsumerBase_init(vrfCoordinator, linkToken);
 		__Pausable_init();
 		__AccessControl_init();
 		__UUPSUpgradeable_init();
+		__ReentrancyGuard_init();
 
 		_setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 		_setupRole(PAUSER_ROLE, _msgSender());
@@ -132,36 +110,73 @@ contract WArtist is
 		_setupRole(DESIGNER_ROLE, _msgSender());
 		_setupRole(BACKEND_ROLE, _msgSender());
 
-		baseURI = "https://api.whizart.co/metadata/";
-		whitelistActive = true;
-		supplyAvailablePresale = 4000;
-		treasuryWallet = _treasureWallet;
-		preSaleLimit = 2;
-		mintStableCost = 500 * 10**18;
+		baseURI = "ipfs://";
 		keyHash = _keyHash;
-		fee = 0.1 * 10**18; // 0.1 LINK
-		//@TODO change to IERC20Upgradeable if uses DAI on Polygon
-		stableCoin = IERC20(stableCoinAddress);
-		// _pause();
+		// @TODO set fee
+		fee = 0.1 * 10**18;
+		whitelistActive = true;
+		mintActive = true;
+		supplyAvailable = 4000;
+		mintSize = 2;
+		// @TODO set native token price
+		mintPrice = 0.0001 * 10**18;
 	}
 
-	function mintWhitelist(uint256 amount) external whenNotPaused nonReentrant returns (bool) {
-		require(whitelistActive == true, "Whitelist is not active");
-		require(supplyAvailablePresale > 0, "All presale Artists are sold");
+	/// @dev Function to receive ether, msg.data must be empty
+	receive() external payable {
+		emit PaymentReceived(_msgSender(), msg.value);
+	}
+
+	/// @dev Function to receive ether, msg.data is not empty
+	fallback() external payable {
+		emit PaymentReceived(_msgSender(), msg.value);
+	}
+
+	/// @notice Mints a new random artist
+	/// To run this function its necessary has approved the contract address spend DAI
+	/// This function call chainlink VRF to generate a random artist
+	/// Artist will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
+	function publicMint() external payable whenNotPaused nonReentrant {
+		require(mintActive == true, "Mint is not available");
+		require(idCounter.current() + 1 <= supplyAvailable, "No token available to mint");
+		require(msg.value == mintPrice, "Wrong amount of native token");
+
 		address to = _msgSender();
-		require(whitelist[to] == true, "Not whitelisted");
-		require(tokenIds[to].length + 1 <= preSaleLimit, "User buy limit reached");
-		uint256 allowance = stableCoin.allowance(_msgSender(), address(this));
-		require(allowance >= amount, "Check the token allowance");
-		require(stableCoin.balanceOf(_msgSender()) >= mintStableCost, "Insuficient funds");
-
-		supplyAvailablePresale = supplyAvailablePresale - 1;
-		stableCoin.transferFrom(to, treasuryWallet, mintStableCost);
-
+		if (whitelistActive) {
+			require(whitelist[to] == true, "Not whitelisted");
+			require(tokenIds[to].length + 1 <= mintSize, "User buy limit reached");
+		}
 		requestRandomToken(to);
-		return true;
 	}
 
+	/// @notice Function to transfer a token from one owner to another
+	/// @param from address The address which the token is transferred from
+	/// @param to address The address which the token is transferred to
+	/// @param tokenId uint256 The token ID
+	/// @dev transfer temporarily disabled
+	function _transfer(
+		address from,
+		address to,
+		uint256 tokenId
+	) internal override whenNotPaused nonReentrant {
+		require(false, "Temporarily disabled");
+		ERC721Upgradeable._transfer(from, to, tokenId);
+	}
+
+	/// @notice Will return the token URI
+	/// @param tokenId uint256 Token ID
+	function tokenURI(uint256 tokenId) public view override returns (string memory) {
+		require(_exists(tokenId), "Artist doesn't exist");
+
+		return string(abi.encodePacked(_baseURI(), tokenURIs[tokenId]));
+	}
+
+	/// @notice Will return current token count
+	function totalSupply() external view returns (uint256) {
+		return idCounter.current();
+	}
+
+	/// @notice Method that returns an Artist array from a specific address
 	function getTokenDetailsByOwner(address _owner) external view returns (Artist[] memory) {
 		uint256[] storage ids = tokenIds[_owner];
 		Artist[] memory result = new Artist[](ids.length);
@@ -171,121 +186,118 @@ contract WArtist is
 		return result;
 	}
 
-	function requestRandomToken(address to) internal returns (bytes32) {
-		require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-		uint256 id = idCounter.current();
-		idCounter.increment();
-		bytes32 requestId = requestRandomness(keyHash, fee);
-
-		requestToSender[requestId] = to;
-		requestToTokenId[requestId] = id;
-		return requestId;
-	}
-
-	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
-		uint256 id = requestToTokenId[requestId];
-		address sender = requestToSender[requestId];
-
-		Body memory body = Body(
-			uint16(((randomNumber % 10000) * bodyPartCounts[BodyCategory.ARM]) / 10000 + 1),
-			uint16(((randomNumber % 100000) * bodyPartCounts[BodyCategory.EYE]) / 100000 + 1),
-			uint16(((randomNumber % 1000000) * bodyPartCounts[BodyCategory.HAIR]) / 1000000 + 1),
-			uint16(((randomNumber % 10000000) * bodyPartCounts[BodyCategory.HEAD]) / 10000000 + 1),
-			uint16(((randomNumber % 100000000) * bodyPartCounts[BodyCategory.MOUTH]) / 100000000 + 1),
-			uint16(((randomNumber % 1000000000) * bodyPartCounts[BodyCategory.OUTFIT]) / 1000000000 + 1),
-			uint16(((randomNumber % 10000000000) * bodyPartCounts[BodyCategory.SOUL]) / 10000000000 + 1)
-		);
-
-		Rarity totalRarity = Rarity(
-			(body.arm + body.eye + body.hair + body.head + body.mouth + body.outfit + body.soul) / 7
-		);
-
-		_safeMint(sender, id);
-		Artist memory artist = Artist(
-			id,
-			totalRarity,
-			uint8(((randomNumber % 100) * 5) / 100 + 1),
-			uint8(((randomNumber % 1000) * 5) / 1000 + 1),
-			2,
-			body
-		);
-		tokenIds[sender].push(id);
-		artists[id] = artist;
-
-		emit ArtistMinted(requestId, sender, id);
-	}
-
-	function _beforeTokenTransfer(
-		address from,
-		address to,
-		uint256 tokenId
-	) internal override whenNotPaused {
-		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
-	}
-
-	function _transfer(
-		address from,
-		address to,
-		uint256 tokenId
-	) internal override {
-		require(false, "Temporarily disabled");
-		ERC721Upgradeable._transfer(from, to, tokenId);
-	}
-
-	function tokenURI(uint256 _tokenId) public view override returns (string memory) {
-		require(_exists(_tokenId), "Artist doesn't exist");
-		return string(abi.encodePacked(_baseURI(), _tokenId));
-	}
-
 	function _baseURI() internal view override returns (string memory) {
 		return baseURI;
 	}
 
-	function addBodyPart(
-		uint16 id,
-		string calldata name,
-		Rarity rarity,
-		BodyCategory category
-	) external onlyRole(DESIGNER_ROLE) {
-		BodyPart memory bodyPart = BodyPart(id, name, rarity, category);
-		bodyParts[id] = bodyPart;
-		bodyPartCounts[category] += 1;
-		emit BodyPartAdded(bodyPart);
-	}
-
-	function getBodyPart(uint16 id) external view returns (BodyPart memory) {
-		return bodyParts[id];
-	}
-
-	function getBodyPartCounts(BodyCategory category) external view returns (uint16) {
-		return bodyPartCounts[category];
-	}
-
-	function addToWhitelist(address[] memory addresses) external onlyRole(BACKEND_ROLE) {
-		for (uint256 i = 0; i < addresses.length; ++i) {
-			whitelist[addresses[i]] = true;
+	function addURIAvailables(Rarity rarity, string[] memory uris) external onlyRole(BACKEND_ROLE) {
+		for (uint256 i = 0; i < uris.length; i++) {
+			addURIAvailable(rarity, uris[i]);
 		}
 	}
 
-	function removeFromWhitelist(address[] memory addresses) external onlyRole(BACKEND_ROLE) {
-		for (uint256 i = 0; i < addresses.length; ++i) {
-			whitelist[addresses[i]] = false;
-		}
+	function addURIAvailable(Rarity rarity, string memory value) public onlyRole(BACKEND_ROLE) {
+		artistsURIByRarity[rarity].push(value);
 	}
+
+	/// @notice This will enable whitelist or "if" in publicMint()
+	function enableWhitelist() external onlyRole(BACKEND_ROLE) {
+		_enableWhitelist();
+	}
+
+	/// @notice This will disable whitelist
+	function disableWhitelist() external onlyRole(BACKEND_ROLE) {
+		_disableWhitelist();
+	}
+
+	/// @notice adding an array/list of addresses to whitelist
+	///  uses internal function _addWhitelistBatch(address [] memory _addresses)
+	/// of Whitelist.sol to accomplish, will revert if duplicates exist in list
+	///  or array of addresses.
+	/// @param _addresses - list/array of addresses
+	function addWhitelistBatch(address[] memory _addresses) external onlyRole(BACKEND_ROLE) {
+		_addWhitelistBatch(_addresses);
+	}
+
+	/// @notice adding one address to whitelist uses internal function
+	///  _addWhitelist(address _address) of Whitelist.sol to accomplish,
+	///  will revert if duplicates exists
+	/// @param _address - address
+	function addWhitelist(address _address) external onlyRole(BACKEND_ROLE) {
+		_addWhitelist(_address);
+	}
+
+	/// @notice Removing an array/list of addresses from whitelist
+	///  uses internal function _removeWhitelistBatch(address [] memory _addresses)
+	///  of Whitelist.sol to accomplish, will revert if duplicates exist in list
+	///  or array of addresses
+	/// @param _addresses - list/array of addresses
+	function removeWhitelistBatch(address[] memory _addresses) external onlyRole(BACKEND_ROLE) {
+		_removeWhitelistBatch(_addresses);
+	}
+
+	/// @notice Removing one address to whitelist uses internal function
+	///  _removeWhitelist(address _address) of Whitelist.sol to accomplish,
+	///  will revert if duplicates exists
+	/// @param _address - address
+	function removeWhitelist(address _address) external onlyRole(BACKEND_ROLE) {
+		_removeWhitelist(_address);
+	}
+
+	function enableMint() external onlyRole(BACKEND_ROLE) {
+		bool old = mintActive;
+		mintActive = true;
+		emit MintActive(old, mintActive);
+	}
+
+	function disableMint() external onlyRole(BACKEND_ROLE) {
+		bool old = mintActive;
+		mintActive = false;
+		emit MintActive(old, mintActive);
+	}
+
+	function setMintCost(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		uint256 old = mintPrice;
+		mintPrice = value;
+		emit PriceChanged(old, mintPrice);
+	}
+
+	function changeMintSize(uint256 _mintSize) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		uint256 old = mintSize;
+		mintSize = _mintSize;
+		emit MintSizeChanged(old, mintSize);
+	}
+
+	function changeSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		uint256 old = supplyAvailable;
+		supplyAvailable = _supplyAvailable;
+		emit SupplyAvailableChanged(old, supplyAvailable);
+	}
+
+	// @TODO
+	// @notice this will use internal functions to set EIP 2981
+	//  found in IERC2981.sol and used by ERC2981Collections.sol
+	// @param address _royaltyAddress - Address for all royalties to go to
+	// @param uint256 _percentage - Precentage in whole number of comission
+	//  of secondary sales
+	// function setRoyaltyInfo(address _royaltyAddress, uint256 _percentage) public onlyRole(DEFAULT_ADMIN_ROLE) {
+	// 	_setRoyalti√es(_royaltyAddress, _percentage);
+	// 	emit UpdatedRoyalties(_royaltyAddress, _percentage);
+	// }
 
 	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
+		string memory old = baseURI;
 		baseURI = _newBaseURI;
+		emit BaseURIChanged(old, baseURI);
 		return true;
 	}
 
-	function setStableMintCost(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		mintStableCost = value;
-		emit PriceChanged(value);
-	}
-
-	function changeTreasuryWallet(address _newAddress) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
-		treasuryWallet = _newAddress;
-		return true;
+	/// @notice function useful for accidental ETH transfers to contract (to user address)
+	/// wraps _user in payable to fix address -> address payable
+	/// @param _user - user address to input
+	/// @param _amount - amount of ETH to transfer
+	function sweepEthToAddress(address _user, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		payable(_user).transfer(_amount);
 	}
 
 	function pauseContract() external onlyRole(PAUSER_ROLE) returns (bool) {
@@ -300,6 +312,10 @@ contract WArtist is
 
 	function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
+	// @TODO
+	/// @notice solidity required override for supportsInterface(bytes4)
+	/// @param interfaceId - bytes4 id per interface or contract
+	///  calculated by ERC165 standards automatically
 	function supportsInterface(bytes4 interfaceId)
 		public
 		view
@@ -307,5 +323,57 @@ contract WArtist is
 		returns (bool)
 	{
 		return super.supportsInterface(interfaceId);
+	}
+
+	/// @dev Function to request RNG from chainlink VRF
+	function requestRandomToken(address to) private {
+		require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
+		uint256 id = idCounter.current();
+		bytes32 requestId = requestRandomness(keyHash, fee);
+
+		idCounter.increment();
+		requestToSender[requestId] = to;
+		requestToTokenId[requestId] = id;
+		emit CalledRandomGenerator(requestId);
+	}
+
+	/// @dev Function to receive VRF callback, generate random properties and mint Artist
+	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
+		Rarity rarity = Rarity(((randomNumber % 100) * 5) / 100);
+
+		// Test what you happen's if some other call update the artistSupplyByRarity while this call read from storage?
+		uint256 index = ((randomNumber % 1000) * artistsURIByRarity[rarity].length) / 1000;
+		string memory uri = artistsURIByRarity[rarity][index];
+		removeMintedURI(index, rarity);
+
+		Artist memory artist = Artist(rarity, PaintType(((randomNumber % 10000) * 5) / 10000 + 1), 1, 2);
+
+		uint256 id = requestToTokenId[requestId];
+		address sender = requestToSender[requestId];
+		_safeMint(sender, id);
+		artists[id] = artist;
+		tokenIds[sender].push(id);
+		tokenURIs[id] = uri;
+
+		emit ArtistMinted(requestId, sender, id);
+	}
+
+	function removeMintedURI(uint256 index, Rarity rarity) private {
+		string[] storage array = artistsURIByRarity[rarity];
+
+		require(index < array.length);
+		array[index] = array[array.length - 1];
+		array.pop();
+
+		artistsURIByRarity[rarity] = array;
+	}
+
+	/// @dev Apply whenNotPaused modifier and call base function
+	function _beforeTokenTransfer(
+		address from,
+		address to,
+		uint256 tokenId
+	) internal override whenNotPaused {
+		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
 	}
 }

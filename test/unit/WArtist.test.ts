@@ -19,18 +19,8 @@ describe("WArtist", function () {
   this.beforeAll(async () => {
     [owner, user] = await ethers.getSigners();
     const chainId = await getChainId();
-    const {
-      whaleStableCoinAddress,
-      stableCoinAddress,
-      vrfCoordinator,
-      linkToken,
-      keyHash,
-    } = networkConfig[chainId];
-    if (!whaleStableCoinAddress || !stableCoinAddress) {
-      throw new Error("Missing address for this network");
-    }
-    whale = await ethers.getSigner(whaleStableCoinAddress);
-    stableCoin = await ethers.getContractAt("ERC20", stableCoinAddress);
+    const { vrfCoordinator, linkToken, keyHash } = networkConfig[chainId];
+
     const contractFactory = await ethers.getContractFactory(
       "contracts/WArtist.sol:WArtist"
     );
@@ -38,7 +28,7 @@ describe("WArtist", function () {
 
     contract = (await upgrades.deployProxy(
       contractFactory,
-      [owner.address, vrfCoordinator, linkToken, keyHash, stableCoinAddress],
+      [owner.address, vrfCoordinator, linkToken, keyHash],
       { kind: "uups" }
     )) as WArtist;
 
@@ -47,7 +37,7 @@ describe("WArtist", function () {
   });
 
   it("Should add address to whitelist", async function () {
-    await contract.addToWhitelist([user.address]);
+    await contract.addWhitelist(user.address);
     expect(await contract.whitelist(user.address)).eq(true);
   });
 });

@@ -51,5 +51,7 @@
   },
   "solidity.packageDefaultDependenciesContractsDirectory": "",
   "solidity.packageDefaultDependenciesDirectory": "node_modules",
-  "solidity.compileUsingLocalVersion": "null"
+  "solidity.compileUsingLocalVersion": "null",
+  "slither.solcPath": "",
+  "slither.hiddenDetectors": ["abiencoderv2-array"]
 }

@@ -5,6 +5,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
+import "@tenderly/hardhat-tenderly";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
@@ -34,18 +35,13 @@ const config: HardhatUserConfig = {
       gasPrice: 8000000000,
       gas: 2100000,
     },
-    localhost: {
-      url: "http://localhost:8545",
-      gasPrice: 8000000000,
-      gas: 2100000,
-    },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${
         process.env.RINKEBY_INFURA_KEY ?? ""
       }`,
       accounts: [
-        `${process.env.RINKEBY_DEPLOYER_PRIV_KEY ?? ""}`,
-        `${process.env.RINKEBY_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
       ],
       gasPrice: 8000000000,
       gas: 2100000,
@@ -54,7 +50,26 @@ const config: HardhatUserConfig = {
       url: `https://ropsten.infura.io/v3/${
         process.env.ROPSTEN_INFURA_KEY ?? ""
       }`,
-      accounts: [`${process.env.ROPSTEN_DEPLOYER_PRIV_KEY ?? ""}`],
+      accounts: [
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+      ],
+    },
+    kovan: {
+      url: `https://kovan.infura.io/v3/${process.env.KOVAN_INFURA_KEY ?? ""}`,
+      accounts: [
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+      ],
+    },
+    mumbai: {
+      url: process.env.MUMBAI_RPC_URL,
+      accounts: [
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+      ],
+      gasPrice: 8000000000,
+      gas: 2100000,
     },
     // matic: {
     //   url: 'https://rpc-mainnet.maticvigil.com/',
@@ -83,7 +98,7 @@ const config: HardhatUserConfig = {
     deployments: "./generated/deployments",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: process.env.POLYGON_API_KEY,
   },
   typechain: {
     outDir: "types/contracts",

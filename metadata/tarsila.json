@@ -1,0 +1,34 @@
+{
+  "name": "Tarsila",
+  "image": "https://bafybeifotyxp22uqlsbwuswqv6us2c3z25kpleecykall7d73aw26fn2ee.ipfs.dweb.link/",
+  "attributes": [
+    {
+      "trail_type": "Rarity",
+      "value": "Grandmaster"
+    },
+    {
+      "trail_type": "Eyes",
+      "value": "Tarsila"
+    },
+    {
+      "trail_type": "Mouth",
+      "value": "Tarsila"
+    },
+    {
+      "trail_type": "Head",
+      "value": "Tarsila"
+    },
+    {
+      "trail_type": "Hair",
+      "value": "Tarsila"
+    },
+    {
+      "trail_type": "Body",
+      "value": "Tarsila"
+    },
+    {
+      "trail_type": "Arm",
+      "value": "Tarsila"
+    }
+  ]
+}

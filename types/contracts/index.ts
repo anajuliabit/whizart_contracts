@@ -31,6 +31,7 @@ export type { IERC20 } from "./IERC20";
 export type { ERC165 } from "./ERC165";
 export type { IERC165 } from "./IERC165";
 export type { VRFConsumerBaseUpgradeable } from "./VRFConsumerBaseUpgradeable";
+export type { Whitelist } from "./Whitelist";
 export type { WArtist } from "./WArtist";
 export type { WhizArt } from "./WhizArt";
 
@@ -64,5 +65,6 @@ export { IERC20__factory } from "./factories/IERC20__factory";
 export { ERC165__factory } from "./factories/ERC165__factory";
 export { IERC165__factory } from "./factories/IERC165__factory";
 export { VRFConsumerBaseUpgradeable__factory } from "./factories/VRFConsumerBaseUpgradeable__factory";
+export { Whitelist__factory } from "./factories/Whitelist__factory";
 export { WArtist__factory } from "./factories/WArtist__factory";
 export { WhizArt__factory } from "./factories/WhizArt__factory";

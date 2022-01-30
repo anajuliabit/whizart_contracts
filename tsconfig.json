@@ -40,5 +40,5 @@
     ".openzeppelin"
   ],
   "exclude": ["node_modules"],
-  "files": ["hardhat.config.ts", "typings.d.ts"]
+  "files": ["hardhat.config.ts"]
 }

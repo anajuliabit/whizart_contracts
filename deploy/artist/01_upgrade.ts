@@ -1,8 +1,7 @@
-import { ethers, getChainId, upgrades } from "hardhat";
+import { ethers, network, run, tenderly, upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { WArtist__factory } from "types/contracts";
-import { networkConfig } from "utils/network";
 
 const contractName = "WArtist";
 
@@ -14,16 +13,10 @@ const func: DeployFunction = async ({
   const contractFactory: WArtist__factory = await ethers.getContractFactory(
     contractName
   );
-  const chainId = await getChainId();
 
-  const { linkToken, vrfCoordinator, keyHash } = networkConfig[chainId];
-
-  const proxy = await upgrades.deployProxy(
-    contractFactory,
-    [vrfCoordinator, linkToken, keyHash],
-    {
-      kind: "uups",
-    }
+  const proxy = await upgrades.upgradeProxy(
+    "0xd02Ae92c07ED004a0564F3c4dEFB7cA63475B4Fa",
+    contractFactory
   );
 
   await proxy.deployed();
@@ -37,6 +30,16 @@ const func: DeployFunction = async ({
   };
 
   await save("WArtist", proxyDeployments);
+
+  await run("verify:verify", {
+    address: proxy.address,
+  });
+
+  await tenderly.verify({
+    name: contractName,
+    address: proxy.address,
+    network: network.name,
+  });
 };
 export default func;
-func.tags = ["WArtist:deploy"];
+func.tags = ["WArtist:upgrade"];

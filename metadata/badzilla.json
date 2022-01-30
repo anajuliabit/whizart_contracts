@@ -1,0 +1,34 @@
+{
+  "name": "Badzilla",
+  "image": "ipfs://bafybeibupmbo7ryc23uv6utcfa6bpwelqc2uqgswho52wjrczmhz25bjvm/",
+  "attributes": [
+    {
+      "trail_type": "Rarity",
+      "value": "Master"
+    },
+    {
+      "trail_type": "Eyes",
+      "value": "Badzilla"
+    },
+    {
+      "trail_type": "Mouth",
+      "value": "Badzilla"
+    },
+    {
+      "trail_type": "Head",
+      "value": "Badzilla"
+    },
+    {
+      "trail_type": "Hair",
+      "value": "Badzilla"
+    },
+    {
+      "trail_type": "Body",
+      "value": "Badzilla"
+    },
+    {
+      "trail_type": "Arm",
+      "value": "Badzilla"
+    }
+  ]
+}
