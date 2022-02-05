@@ -34,18 +34,16 @@ export type ArtistStructOutput = [number, number, number, number] & {
 
 export interface WArtistInterface extends utils.Interface {
   functions: {
-    "BACKEND_ROLE()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "DESIGNER_ROLE()": FunctionFragment;
-    "PAUSER_ROLE()": FunctionFragment;
-    "UPGRADER_ROLE()": FunctionFragment;
+    "DEVELOPER_ROLE()": FunctionFragment;
+    "MAINTENANCE_ROLE()": FunctionFragment;
+    "STAFF_ROLE()": FunctionFragment;
     "addURIAvailable(uint8,string)": FunctionFragment;
     "addURIAvailables(uint8,string[])": FunctionFragment;
     "addWhitelist(address)": FunctionFragment;
     "addWhitelistBatch(address[])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "artists(uint256)": FunctionFragment;
-    "artistsURIByRarity(uint8,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "changeBaseURI(string)": FunctionFragment;
@@ -91,26 +89,23 @@ export interface WArtistInterface extends utils.Interface {
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "whitelist(address)": FunctionFragment;
     "whitelistActive()": FunctionFragment;
+    "withdraw(address,uint256)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "BACKEND_ROLE",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "DESIGNER_ROLE",
+    functionFragment: "DEVELOPER_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "PAUSER_ROLE",
+    functionFragment: "MAINTENANCE_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "UPGRADER_ROLE",
+    functionFragment: "STAFF_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -136,10 +131,6 @@ export interface WArtistInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "artists",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "artistsURIByRarity",
-    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
@@ -294,27 +285,24 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "whitelistActive",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [string, BigNumberish]
+  ): string;
 
-  decodeFunctionResult(
-    functionFragment: "BACKEND_ROLE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "DESIGNER_ROLE",
+    functionFragment: "DEVELOPER_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "PAUSER_ROLE",
+    functionFragment: "MAINTENANCE_ROLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "UPGRADER_ROLE",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "STAFF_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "addURIAvailable",
     data: BytesLike
@@ -333,10 +321,6 @@ export interface WArtistInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "artists", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "artistsURIByRarity",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(
@@ -460,6 +444,7 @@ export interface WArtistInterface extends utils.Interface {
     functionFragment: "whitelistActive",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -675,15 +660,13 @@ export interface WArtist extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    BACKEND_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    DESIGNER_ROLE(overrides?: CallOverrides): Promise<[string]>;
+    DEVELOPER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<[string]>;
+    MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    UPGRADER_ROLE(overrides?: CallOverrides): Promise<[string]>;
+    STAFF_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     addURIAvailable(
       rarity: BigNumberish,
@@ -724,12 +707,6 @@ export interface WArtist extends BaseContract {
         colorSlots: number;
       }
     >;
-
-    artistsURIByRarity(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -935,17 +912,21 @@ export interface WArtist extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     whitelistActive(overrides?: CallOverrides): Promise<[boolean]>;
-  };
 
-  BACKEND_ROLE(overrides?: CallOverrides): Promise<string>;
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+  };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  DESIGNER_ROLE(overrides?: CallOverrides): Promise<string>;
+  DEVELOPER_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
+  MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  UPGRADER_ROLE(overrides?: CallOverrides): Promise<string>;
+  STAFF_ROLE(overrides?: CallOverrides): Promise<string>;
 
   addURIAvailable(
     rarity: BigNumberish,
@@ -986,12 +967,6 @@ export interface WArtist extends BaseContract {
       colorSlots: number;
     }
   >;
-
-  artistsURIByRarity(
-    arg0: BigNumberish,
-    arg1: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1190,16 +1165,20 @@ export interface WArtist extends BaseContract {
 
   whitelistActive(overrides?: CallOverrides): Promise<boolean>;
 
-  callStatic: {
-    BACKEND_ROLE(overrides?: CallOverrides): Promise<string>;
+  withdraw(
+    _to: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
+  callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    DESIGNER_ROLE(overrides?: CallOverrides): Promise<string>;
+    DEVELOPER_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
+    MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    UPGRADER_ROLE(overrides?: CallOverrides): Promise<string>;
+    STAFF_ROLE(overrides?: CallOverrides): Promise<string>;
 
     addURIAvailable(
       rarity: BigNumberish,
@@ -1237,12 +1216,6 @@ export interface WArtist extends BaseContract {
         colorSlots: number;
       }
     >;
-
-    artistsURIByRarity(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1420,6 +1393,12 @@ export interface WArtist extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
     whitelistActive(overrides?: CallOverrides): Promise<boolean>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -1586,15 +1565,13 @@ export interface WArtist extends BaseContract {
   };
 
   estimateGas: {
-    BACKEND_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    DESIGNER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+    DEVELOPER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+    MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    UPGRADER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+    STAFF_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     addURIAvailable(
       rarity: BigNumberish,
@@ -1625,12 +1602,6 @@ export interface WArtist extends BaseContract {
     ): Promise<BigNumber>;
 
     artists(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    artistsURIByRarity(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1837,20 +1808,24 @@ export interface WArtist extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     whitelistActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    BACKEND_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    DESIGNER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    DEVELOPER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    UPGRADER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    STAFF_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     addURIAvailable(
       rarity: BigNumberish,
@@ -1882,12 +1857,6 @@ export interface WArtist extends BaseContract {
 
     artists(
       arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    artistsURIByRarity(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2102,5 +2071,11 @@ export interface WArtist extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     whitelistActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
   };
 }

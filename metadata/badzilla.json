@@ -1,6 +1,8 @@
 {
   "name": "Badzilla",
+  "description": "King of the Monsters",
   "image": "ipfs://bafybeibupmbo7ryc23uv6utcfa6bpwelqc2uqgswho52wjrczmhz25bjvm/",
+  "external_link": "https://whizart.co/",
   "attributes": [
     {
       "trail_type": "Rarity",

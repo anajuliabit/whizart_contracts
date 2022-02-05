@@ -1,3 +1,14 @@
+/*
+██     ██ ██   ██ ██ ███████  █████  ██████  ████████ 
+██     ██ ██   ██ ██    ███  ██   ██ ██   ██    ██    
+██  █  ██ ███████ ██   ███   ███████ ██████     ██    
+██ ███ ██ ██   ██ ██  ███    ██   ██ ██   ██    ██    
+ ███ ███  ██   ██ ██ ███████ ██   ██ ██   ██    ██    
+                                                                                                      
+In case of problems contact us - support@whizart.co
+https://whizart.co/
+*/
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
@@ -6,15 +17,12 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/VRFConsumerBaseUpgradeable.sol";
 import "./utils/Whitelist.sol";
-import "hardhat/console.sol";
 
 contract WArtist is
 	Initializable,
@@ -27,11 +35,11 @@ contract WArtist is
 	Whitelist
 {
 	using CountersUpgradeable for CountersUpgradeable.Counter;
+	CountersUpgradeable.Counter public idCounter;
 
-	bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-	bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
-	bytes32 public constant BACKEND_ROLE = keccak256("BACKEND_ROLE");
+	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
+	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
+	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
 
 	event ArtistMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
 	event PriceChanged(uint256 _old, uint256 _new);
@@ -61,27 +69,23 @@ contract WArtist is
 	struct Artist {
 		Rarity rarity;
 		PaintType paintType;
-		// Initial level: 1, Max level: 10
 		uint8 creativity;
-		// Max: 6
 		uint8 colorSlots;
 	}
 
-	CountersUpgradeable.Counter public idCounter;
 	string public baseURI;
 
-	/// @notice Mapping from owner address to token ID
+	/// @notice Mapping from owner address to token ID's
 	mapping(address => uint256[]) public tokenIds;
 
-	/// @notice Mapping from token ID to token details
+	/// @notice Mapping from ID to Artist details
 	mapping(uint256 => Artist) public artists;
+
+	mapping(Rarity => string[]) private artistsURIByRarity;
 
 	mapping(uint256 => string) private tokenURIs;
 
-	/// @notice URI's available of artists of each rarity
-	mapping(Rarity => string[]) public artistsURIByRarity;
-
-	// Chainlink VRF variables
+	/// @dev Chainlink VRF variables
 	bytes32 private keyHash;
 	uint256 private fee;
 	mapping(bytes32 => address) private requestToSender;
@@ -105,21 +109,20 @@ contract WArtist is
 		__ReentrancyGuard_init();
 
 		_setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-		_setupRole(PAUSER_ROLE, _msgSender());
-		_setupRole(UPGRADER_ROLE, _msgSender());
-		_setupRole(DESIGNER_ROLE, _msgSender());
-		_setupRole(BACKEND_ROLE, _msgSender());
+		_setupRole(MAINTENANCE_ROLE, _msgSender());
+		_setupRole(DEVELOPER_ROLE, _msgSender());
+		_setupRole(STAFF_ROLE, _msgSender());
 
 		baseURI = "ipfs://";
-		keyHash = _keyHash;
-		// @TODO set fee
-		fee = 0.1 * 10**18;
-		whitelistActive = true;
+			whitelistActive = true;
 		mintActive = true;
 		supplyAvailable = 4000;
 		mintSize = 2;
+		keyHash = _keyHash;
 		// @TODO set native token price
 		mintPrice = 0.0001 * 10**18;
+			// @TODO set fee
+		fee = 0.1 * 10**18;
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty
@@ -132,13 +135,12 @@ contract WArtist is
 		emit PaymentReceived(_msgSender(), msg.value);
 	}
 
-	/// @notice Mints a new random artist
-	/// To run this function its necessary has approved the contract address spend DAI
-	/// This function call chainlink VRF to generate a random artist
+	/// @notice Mints a new random Artist
+	/// This function call chainlink VRF to generate a random Artist
 	/// Artist will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
 	function publicMint() external payable whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
-		require(idCounter.current() + 1 <= supplyAvailable, "No token available to mint");
+		require(idCounter.current() + 1 <= supplyAvailable, "No Artist available to mint");
 		require(msg.value == mintPrice, "Wrong amount of native token");
 
 		address to = _msgSender();
@@ -171,12 +173,13 @@ contract WArtist is
 		return string(abi.encodePacked(_baseURI(), tokenURIs[tokenId]));
 	}
 
-	/// @notice Will return current token count
+	/// @notice Will return current token supply
 	function totalSupply() external view returns (uint256) {
 		return idCounter.current();
 	}
-
-	/// @notice Method that returns an Artist array from a specific address
+	
+	/// @notice This function will returns an Artist array from a specific address
+	/// @param _owner address The address to get the artists from
 	function getTokenDetailsByOwner(address _owner) external view returns (Artist[] memory) {
 		uint256[] storage ids = tokenIds[_owner];
 		Artist[] memory result = new Artist[](ids.length);
@@ -186,27 +189,27 @@ contract WArtist is
 		return result;
 	}
 
-	function _baseURI() internal view override returns (string memory) {
-		return baseURI;
-	}
+/*
+	This section has all functions available only for STAFF_ROLE
+*/
 
-	function addURIAvailables(Rarity rarity, string[] memory uris) external onlyRole(BACKEND_ROLE) {
+	function addURIAvailables(Rarity rarity, string[] memory uris) external onlyRole(STAFF_ROLE) {
 		for (uint256 i = 0; i < uris.length; i++) {
 			addURIAvailable(rarity, uris[i]);
 		}
 	}
 
-	function addURIAvailable(Rarity rarity, string memory value) public onlyRole(BACKEND_ROLE) {
+	function addURIAvailable(Rarity rarity, string memory value) public onlyRole(STAFF_ROLE) {
 		artistsURIByRarity[rarity].push(value);
 	}
 
 	/// @notice This will enable whitelist or "if" in publicMint()
-	function enableWhitelist() external onlyRole(BACKEND_ROLE) {
+	function enableWhitelist() external onlyRole(STAFF_ROLE) {
 		_enableWhitelist();
 	}
 
 	/// @notice This will disable whitelist
-	function disableWhitelist() external onlyRole(BACKEND_ROLE) {
+	function disableWhitelist() external onlyRole(STAFF_ROLE) {
 		_disableWhitelist();
 	}
 
@@ -215,7 +218,7 @@ contract WArtist is
 	/// of Whitelist.sol to accomplish, will revert if duplicates exist in list
 	///  or array of addresses.
 	/// @param _addresses - list/array of addresses
-	function addWhitelistBatch(address[] memory _addresses) external onlyRole(BACKEND_ROLE) {
+	function addWhitelistBatch(address[] memory _addresses) external onlyRole(STAFF_ROLE) {
 		_addWhitelistBatch(_addresses);
 	}
 
@@ -223,7 +226,7 @@ contract WArtist is
 	///  _addWhitelist(address _address) of Whitelist.sol to accomplish,
 	///  will revert if duplicates exists
 	/// @param _address - address
-	function addWhitelist(address _address) external onlyRole(BACKEND_ROLE) {
+	function addWhitelist(address _address) external onlyRole(STAFF_ROLE) {
 		_addWhitelist(_address);
 	}
 
@@ -232,7 +235,7 @@ contract WArtist is
 	///  of Whitelist.sol to accomplish, will revert if duplicates exist in list
 	///  or array of addresses
 	/// @param _addresses - list/array of addresses
-	function removeWhitelistBatch(address[] memory _addresses) external onlyRole(BACKEND_ROLE) {
+	function removeWhitelistBatch(address[] memory _addresses) external onlyRole(STAFF_ROLE) {
 		_removeWhitelistBatch(_addresses);
 	}
 
@@ -240,21 +243,25 @@ contract WArtist is
 	///  _removeWhitelist(address _address) of Whitelist.sol to accomplish,
 	///  will revert if duplicates exists
 	/// @param _address - address
-	function removeWhitelist(address _address) external onlyRole(BACKEND_ROLE) {
+	function removeWhitelist(address _address) external onlyRole(STAFF_ROLE) {
 		_removeWhitelist(_address);
 	}
 
-	function enableMint() external onlyRole(BACKEND_ROLE) {
+	function enableMint() external onlyRole(STAFF_ROLE) {
 		bool old = mintActive;
 		mintActive = true;
 		emit MintActive(old, mintActive);
 	}
 
-	function disableMint() external onlyRole(BACKEND_ROLE) {
+	function disableMint() external onlyRole(STAFF_ROLE) {
 		bool old = mintActive;
 		mintActive = false;
 		emit MintActive(old, mintActive);
 	}
+
+/*
+	This section has all functions available only for DEFAULT_ADMIN_ROLE
+*/
 
 	function setMintCost(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = mintPrice;
@@ -274,22 +281,17 @@ contract WArtist is
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-	// @TODO
-	// @notice this will use internal functions to set EIP 2981
-	//  found in IERC2981.sol and used by ERC2981Collections.sol
-	// @param address _royaltyAddress - Address for all royalties to go to
-	// @param uint256 _percentage - Precentage in whole number of comission
-	//  of secondary sales
-	// function setRoyaltyInfo(address _royaltyAddress, uint256 _percentage) public onlyRole(DEFAULT_ADMIN_ROLE) {
-	// 	_setRoyalti√es(_royaltyAddress, _percentage);
-	// 	emit UpdatedRoyalties(_royaltyAddress, _percentage);
-	// }
 
 	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
 		return true;
+	}
+
+	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		require(address(this).balance >= _amount, "Not enough tokens");
+		payable(_to).transfer(_amount);
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)
@@ -300,17 +302,23 @@ contract WArtist is
 		payable(_user).transfer(_amount);
 	}
 
-	function pauseContract() external onlyRole(PAUSER_ROLE) returns (bool) {
+/*
+	This section has all functions available only for MAINTENANCE_ROLE
+*/
+
+	function pauseContract() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
 		_pause();
 		return true;
 	}
 
-	function unpauseContract() external onlyRole(PAUSER_ROLE) returns (bool) {
+	function unpauseContract() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
 		_unpause();
 		return true;
 	}
 
-	function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
+/*
+	Internal and private functions
+*/
 
 	// @TODO
 	/// @notice solidity required override for supportsInterface(bytes4)
@@ -340,13 +348,13 @@ contract WArtist is
 	/// @dev Function to receive VRF callback, generate random properties and mint Artist
 	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
 		Rarity rarity = Rarity(((randomNumber % 100) * 5) / 100);
-
 		// Test what you happen's if some other call update the artistSupplyByRarity while this call read from storage?
 		uint256 index = ((randomNumber % 1000) * artistsURIByRarity[rarity].length) / 1000;
 		string memory uri = artistsURIByRarity[rarity][index];
 		removeMintedURI(index, rarity);
-
-		Artist memory artist = Artist(rarity, PaintType(((randomNumber % 10000) * 5) / 10000 + 1), 1, 2);
+		
+		PaintType paintType = PaintType(((randomNumber % 10000) * 5) / 10000);
+		Artist memory artist = Artist(rarity,paintType, 1, 2);
 
 		uint256 id = requestToTokenId[requestId];
 		address sender = requestToSender[requestId];
@@ -358,6 +366,7 @@ contract WArtist is
 		emit ArtistMinted(requestId, sender, id);
 	}
 
+	/// @dev
 	function removeMintedURI(uint256 index, Rarity rarity) private {
 		string[] storage array = artistsURIByRarity[rarity];
 
@@ -376,4 +385,11 @@ contract WArtist is
 	) internal override whenNotPaused {
 		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
 	}
+
+	function _baseURI() internal view override returns (string memory) {
+		return baseURI;
+	}
+
+	function _authorizeUpgrade(address) internal override onlyRole(DEVELOPER_ROLE) {}
+
 }

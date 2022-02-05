@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect, use } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, getChainId, upgrades } from "hardhat";
-import { ERC20, WArtist } from "types/contracts";
+import { WArtist } from "types/contracts";
 import { networkConfig } from "utils/network";
 
 // Run the tests with a copy of rinkeby network
@@ -12,10 +12,7 @@ use(solidity);
 
 describe("WArtist", function () {
   let contract: WArtist;
-  let stableCoin: ERC20;
-  let owner: SignerWithAddress,
-    user: SignerWithAddress,
-    whale: SignerWithAddress;
+  let owner: SignerWithAddress,user: SignerWithAddress
   this.beforeAll(async () => {
     [owner, user] = await ethers.getSigners();
     const chainId = await getChainId();
@@ -24,7 +21,6 @@ describe("WArtist", function () {
     const contractFactory = await ethers.getContractFactory(
       "contracts/WArtist.sol:WArtist"
     );
-    await stableCoin.connect(whale).transfer(user.address, "1000000000");
 
     contract = (await upgrades.deployProxy(
       contractFactory,

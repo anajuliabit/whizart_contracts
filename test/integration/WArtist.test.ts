@@ -7,9 +7,15 @@ import { WArtist } from "../../types/contracts";
 // Run this test only in development network
 // It's necessary that the deployed contract has LINK (faucet)
 
+
 describe("WArtist Integration Tests", function () {
   let contract: WArtist;
   let owner: SignerWithAddress, user: SignerWithAddress;
+  
+  function addURIByRarity(rarity: number, uris: string[]) {
+    return contract.connect(owner).addURIAvailables(rarity, uris);
+  }
+  
   this.beforeAll(async () => {
     if (
       network.name !== "rinkeby" &&
@@ -38,6 +44,27 @@ describe("WArtist Integration Tests", function () {
     contract = WArtistContract.attach(
       proxy.proxies[proxy.proxies.length - 1].address
     );
+
+    await addURIByRarity(0, [
+      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+    ]);
+    await addURIByRarity(1, [
+        "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+        "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+      ]);
+    await addURIByRarity(2, [
+          "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+          "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+        ]);
+    await addURIByRarity(3, [
+          "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+          "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+        ]);
+    await addURIByRarity(4, [
+          "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+          "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+        ]);
   });
 
   it("Shoud add to whitelist", async () => {
@@ -51,51 +78,9 @@ describe("WArtist Integration Tests", function () {
     expect(isWhitelisted).eq(true);
   });
 
-  async function addURIByRarity(rarity: number, uris: string[]) {
-    return contract.connect(owner).addURIAvailables(rarity, uris);
-  }
 
-  it("Shoud add URIs available by Rarity", async () => {
-    await addURIByRarity(0, [
-      "bafkreifnn3erf3hlv7n7klejuy7f7n5fjoc7ddekpwv6jqa3aeyrfcvtre",
-      "bafkreia3w64fe4inft6v7pzshlul7zfth6eoci2pkv6eks7mrb3fnbeb4m",
-    ])
-      .then((tx) => tx.wait())
-      .then(() =>
-        addURIByRarity(1, [
-          "bafkreifnn3erf3hlv7n7klejuy7f7n5fjoc7ddekpwv6jqa3aeyrfcvtre",
-          "ipfs://bafkreia3w64fe4inft6v7pzshlul7zfth6eoci2pkv6eks7mrb3fnbeb4m",
-        ])
-      )
-      .then((tx) => tx.wait())
-      .then(() =>
-        addURIByRarity(2, [
-          "bafkreifnn3erf3hlv7n7klejuy7f7n5fjoc7ddekpwv6jqa3aeyrfcvtre",
-          "bafkreia3w64fe4inft6v7pzshlul7zfth6eoci2pkv6eks7mrb3fnbeb4m",
-        ])
-      )
-      .then((tx) => tx.wait())
-      .then(() =>
-        addURIByRarity(3, [
-          "bafkreifnn3erf3hlv7n7klejuy7f7n5fjoc7ddekpwv6jqa3aeyrfcvtre",
-          "bafkreia3w64fe4inft6v7pzshlul7zfth6eoci2pkv6eks7mrb3fnbeb4m",
-        ])
-      )
-      .then((tx) => tx.wait())
-      .then(() =>
-        addURIByRarity(4, [
-          "bafkreifnn3erf3hlv7n7klejuy7f7n5fjoc7ddekpwv6jqa3aeyrfcvtre",
-          "bafkreia3w64fe4inft6v7pzshlul7zfth6eoci2pkv6eks7mrb3fnbeb4m",
-        ])
-      )
-      .then((tx) => tx.wait());
-
-    const firstURINovice = await contract.artistsURIByRarity(0, 0);
-
-    expect(Number(firstURINovice)).eq(1);
-  });
-
-  it("Should successfully mint a Artist", async () => {
+  it.only("Should successfully mint a Artist", async () => {
+    this.timeout(0)
     const transaction = await contract
       .connect(user)
       .publicMint({ value: ethers.utils.parseUnits("0.0001") });

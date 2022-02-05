@@ -29,7 +29,7 @@ task("mint", "Mint an Artist")
 
       const request = await contract
         .connect(taskArgs.address)
-        .mintWhitelist("500000000");
+        .publicMint();
       await request.wait();
     }
   );
