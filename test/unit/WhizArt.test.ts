@@ -1,16 +1,16 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect } from "chai";
-import { Contract } from "ethers";
 import { ethers } from "hardhat";
+import { WhizArt } from "types/contracts";
 
 describe("WhizArt Token", function () {
-  let whiz: Contract;
+  let whiz: WhizArt;
   let owner: SignerWithAddress, to: SignerWithAddress;
 
   this.beforeAll(async () => {
     [owner, to] = await ethers.getSigners();
     const WhizArtToken = await ethers.getContractFactory("WhizArt");
-    whiz = await WhizArtToken.deploy(owner.address);
+    whiz = (await WhizArtToken.deploy(owner.address)) as WhizArt;
     await whiz.deployed();
   });
 
@@ -44,16 +44,16 @@ describe("WhizArt Token", function () {
   it("Should be ownable", async function () {
     const [, notOwner] = await ethers.getSigners();
 
-    await expect(whiz.connect(notOwner).pause()).to.be.revertedWith(
+    await expect(whiz.connect(notOwner).pause()).revertedWith(
       `AccessControl: account ${notOwner.address.toLowerCase()} is missing role 0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a`
     );
   });
 
   it("Should be burnable", async function () {
-    expect(await whiz.totalSupply()).to.equal("100000000000000000000000000");
+    expect(await whiz.totalSupply()).equal("100000000000000000000000000");
 
     await whiz.burn("1");
 
-    expect(await whiz.totalSupply()).to.equal("99999999999999999999999999");
+    expect(await whiz.totalSupply()).equal("99999999999999999999999999");
   });
 });

@@ -2,9 +2,10 @@
 
 - [x] Reentrancy guard
 - [x] WArtist documentation
+- [ ] WArtist support an interface
 - [ ] Add royalty to WArtist
 - [ ] WArtist unit tests
-- [ ] WArtist integration tests
+- [x] WArtist integration tests
 - [ ] Workshop contract
 - [ ] Paints contract
-- [ ] Tenderly integration
+- [x] Tenderly integration

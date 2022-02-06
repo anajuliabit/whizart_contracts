@@ -27,8 +27,7 @@
     "plugin:prettier/recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:jest/recommended"
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "plugins": ["prettier", "formatjs"],
   "rules": {

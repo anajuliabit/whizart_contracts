@@ -23,6 +23,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/VRFConsumerBaseUpgradeable.sol";
 import "./utils/Whitelist.sol";
+import "hardhat/console.sol";
 
 contract WArtist is
 	Initializable,
@@ -81,7 +82,7 @@ contract WArtist is
 	/// @notice Mapping from ID to Artist details
 	mapping(uint256 => Artist) public artists;
 
-	mapping(Rarity => string[]) private artistsURIByRarity;
+	mapping(Rarity => string[]) public notMintedURIs;
 
 	mapping(uint256 => string) private tokenURIs;
 
@@ -114,14 +115,14 @@ contract WArtist is
 		_setupRole(STAFF_ROLE, _msgSender());
 
 		baseURI = "ipfs://";
-			whitelistActive = true;
+		whitelistActive = true;
 		mintActive = true;
 		supplyAvailable = 4000;
 		mintSize = 2;
 		keyHash = _keyHash;
 		// @TODO set native token price
 		mintPrice = 0.0001 * 10**18;
-			// @TODO set fee
+		// @TODO set fee
 		fee = 0.1 * 10**18;
 	}
 
@@ -177,7 +178,7 @@ contract WArtist is
 	function totalSupply() external view returns (uint256) {
 		return idCounter.current();
 	}
-	
+
 	/// @notice This function will returns an Artist array from a specific address
 	/// @param _owner address The address to get the artists from
 	function getTokenDetailsByOwner(address _owner) external view returns (Artist[] memory) {
@@ -189,18 +190,22 @@ contract WArtist is
 		return result;
 	}
 
-/*
+	/*
 	This section has all functions available only for STAFF_ROLE
 */
 
-	function addURIAvailables(Rarity rarity, string[] memory uris) external onlyRole(STAFF_ROLE) {
+	function addAvailableURIs(Rarity rarity, string[] memory uris) external onlyRole(STAFF_ROLE) {
 		for (uint256 i = 0; i < uris.length; i++) {
-			addURIAvailable(rarity, uris[i]);
+			addAvailableURI(rarity, uris[i]);
 		}
 	}
 
-	function addURIAvailable(Rarity rarity, string memory value) public onlyRole(STAFF_ROLE) {
-		artistsURIByRarity[rarity].push(value);
+	function addAvailableURI(Rarity rarity, string memory value) public onlyRole(STAFF_ROLE) {
+		notMintedURIs[rarity].push(value);
+	}
+
+	function removeAvailableURI(Rarity rarity, uint256 index) public onlyRole(STAFF_ROLE) {
+		removeURI(index, rarity);
 	}
 
 	/// @notice This will enable whitelist or "if" in publicMint()
@@ -259,7 +264,7 @@ contract WArtist is
 		emit MintActive(old, mintActive);
 	}
 
-/*
+	/*
 	This section has all functions available only for DEFAULT_ADMIN_ROLE
 */
 
@@ -281,7 +286,6 @@ contract WArtist is
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-
 	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
@@ -302,21 +306,21 @@ contract WArtist is
 		payable(_user).transfer(_amount);
 	}
 
-/*
+	/*
 	This section has all functions available only for MAINTENANCE_ROLE
 */
 
-	function pauseContract() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
+	function pause() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
 		_pause();
 		return true;
 	}
 
-	function unpauseContract() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
+	function unpause() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
 		_unpause();
 		return true;
 	}
 
-/*
+	/*
 	Internal and private functions
 */
 
@@ -338,7 +342,7 @@ contract WArtist is
 		require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
 		uint256 id = idCounter.current();
 		bytes32 requestId = requestRandomness(keyHash, fee);
-
+		console.logBytes32(requestId);
 		idCounter.increment();
 		requestToSender[requestId] = to;
 		requestToTokenId[requestId] = id;
@@ -349,12 +353,13 @@ contract WArtist is
 	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
 		Rarity rarity = Rarity(((randomNumber % 100) * 5) / 100);
 		// Test what you happen's if some other call update the artistSupplyByRarity while this call read from storage?
-		uint256 index = ((randomNumber % 1000) * artistsURIByRarity[rarity].length) / 1000;
-		string memory uri = artistsURIByRarity[rarity][index];
-		removeMintedURI(index, rarity);
-		
+		uint256 index = ((randomNumber % 1000) * notMintedURIs[rarity].length) / 1000;
+		string memory uri = notMintedURIs[rarity][index];
+		removeURI(index, rarity);
+		(index, rarity);
+
 		PaintType paintType = PaintType(((randomNumber % 10000) * 5) / 10000);
-		Artist memory artist = Artist(rarity,paintType, 1, 2);
+		Artist memory artist = Artist(rarity, paintType, 1, 2);
 
 		uint256 id = requestToTokenId[requestId];
 		address sender = requestToSender[requestId];
@@ -366,15 +371,15 @@ contract WArtist is
 		emit ArtistMinted(requestId, sender, id);
 	}
 
-	/// @dev
-	function removeMintedURI(uint256 index, Rarity rarity) private {
-		string[] storage array = artistsURIByRarity[rarity];
-
+	// @dev Removes URI from notMintedURIs
+	function removeURI(uint256 index, Rarity rarity) private {
+		string[] storage array = notMintedURIs[rarity];
 		require(index < array.length);
+
 		array[index] = array[array.length - 1];
 		array.pop();
 
-		artistsURIByRarity[rarity] = array;
+		notMintedURIs[rarity] = array;
 	}
 
 	/// @dev Apply whenNotPaused modifier and call base function
@@ -391,5 +396,4 @@ contract WArtist is
 	}
 
 	function _authorizeUpgrade(address) internal override onlyRole(DEVELOPER_ROLE) {}
-
 }

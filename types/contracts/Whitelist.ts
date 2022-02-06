@@ -33,21 +33,13 @@ export interface WhitelistInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "UpdatedWhitelistStatus(bool,bool)": EventFragment;
     "WhitelistChanged(address,bool,bool)": EventFragment;
+    "WhitelistStatusChanged(bool,bool)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "UpdatedWhitelistStatus"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WhitelistChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "WhitelistStatusChanged"): EventFragment;
 }
-
-export type UpdatedWhitelistStatusEvent = TypedEvent<
-  [boolean, boolean],
-  { _old: boolean; _new: boolean }
->;
-
-export type UpdatedWhitelistStatusEventFilter =
-  TypedEventFilter<UpdatedWhitelistStatusEvent>;
 
 export type WhitelistChangedEvent = TypedEvent<
   [string, boolean, boolean],
@@ -56,6 +48,14 @@ export type WhitelistChangedEvent = TypedEvent<
 
 export type WhitelistChangedEventFilter =
   TypedEventFilter<WhitelistChangedEvent>;
+
+export type WhitelistStatusChangedEvent = TypedEvent<
+  [boolean, boolean],
+  { _old: boolean; _new: boolean }
+>;
+
+export type WhitelistStatusChangedEventFilter =
+  TypedEventFilter<WhitelistStatusChangedEvent>;
 
 export interface Whitelist extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -100,15 +100,6 @@ export interface Whitelist extends BaseContract {
   };
 
   filters: {
-    "UpdatedWhitelistStatus(bool,bool)"(
-      _old?: null,
-      _new?: null
-    ): UpdatedWhitelistStatusEventFilter;
-    UpdatedWhitelistStatus(
-      _old?: null,
-      _new?: null
-    ): UpdatedWhitelistStatusEventFilter;
-
     "WhitelistChanged(address,bool,bool)"(
       _address?: null,
       old?: null,
@@ -119,6 +110,15 @@ export interface Whitelist extends BaseContract {
       old?: null,
       update?: null
     ): WhitelistChangedEventFilter;
+
+    "WhitelistStatusChanged(bool,bool)"(
+      _old?: null,
+      _new?: null
+    ): WhitelistStatusChangedEventFilter;
+    WhitelistStatusChanged(
+      _old?: null,
+      _new?: null
+    ): WhitelistStatusChangedEventFilter;
   };
 
   estimateGas: {

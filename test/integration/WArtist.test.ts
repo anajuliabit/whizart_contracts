@@ -7,15 +7,14 @@ import { WArtist } from "../../types/contracts";
 // Run this test only in development network
 // It's necessary that the deployed contract has LINK (faucet)
 
-
 describe("WArtist Integration Tests", function () {
   let contract: WArtist;
   let owner: SignerWithAddress, user: SignerWithAddress;
-  
+
   function addURIByRarity(rarity: number, uris: string[]) {
-    return contract.connect(owner).addURIAvailables(rarity, uris);
+    return contract.connect(owner).addAvailableURIs(rarity, uris);
   }
-  
+
   this.beforeAll(async () => {
     if (
       network.name !== "rinkeby" &&
@@ -50,21 +49,21 @@ describe("WArtist Integration Tests", function () {
       "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
     ]);
     await addURIByRarity(1, [
-        "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-        "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-      ]);
+      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+    ]);
     await addURIByRarity(2, [
-          "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-          "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-        ]);
+      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+    ]);
     await addURIByRarity(3, [
-          "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-          "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-        ]);
+      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+    ]);
     await addURIByRarity(4, [
-          "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-          "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-        ]);
+      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+    ]);
   });
 
   it("Shoud add to whitelist", async () => {
@@ -78,9 +77,8 @@ describe("WArtist Integration Tests", function () {
     expect(isWhitelisted).eq(true);
   });
 
-
   it.only("Should successfully mint a Artist", async () => {
-    this.timeout(0)
+    this.timeout(0);
     const transaction = await contract
       .connect(user)
       .publicMint({ value: ethers.utils.parseUnits("0.0001") });

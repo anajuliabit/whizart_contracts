@@ -3,7 +3,7 @@ pragma solidity ^0.8.2;
 
 contract Whitelist {
 	event WhitelistChanged(address _address, bool old, bool update);
-	event UpdatedWhitelistStatus(bool _old, bool _new);
+	event WhitelistStatusChanged(bool _old, bool _new);
 
 	bool public whitelistActive;
 
@@ -50,13 +50,13 @@ contract Whitelist {
 	function _enableWhitelist() internal {
 		bool old = whitelistActive;
 		whitelistActive = true;
-		emit UpdatedWhitelistStatus(old, whitelistActive);
+		emit WhitelistStatusChanged(old, whitelistActive);
 	}
 
 	// @notice This will disable whitelist
 	function _disableWhitelist() internal {
 		bool old = whitelistActive;
 		whitelistActive = false;
-		emit UpdatedWhitelistStatus(old, whitelistActive);
+		emit WhitelistStatusChanged(old, whitelistActive);
 	}
 }

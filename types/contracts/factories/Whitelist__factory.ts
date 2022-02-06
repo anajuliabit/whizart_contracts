@@ -11,25 +11,6 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "bool",
-        name: "_old",
-        type: "bool",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "_new",
-        type: "bool",
-      },
-    ],
-    name: "UpdatedWhitelistStatus",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
         internalType: "address",
         name: "_address",
         type: "address",
@@ -48,6 +29,25 @@ const _abi = [
       },
     ],
     name: "WhitelistChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "_old",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "_new",
+        type: "bool",
+      },
+    ],
+    name: "WhitelistStatusChanged",
     type: "event",
   },
   {
@@ -85,7 +85,7 @@ const _abi = [
 ];
 
 const _bytecode =
-  "0x608060405234801561001057600080fd5b5060d98061001f6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c806302ce58131460375780639b19251a146057575b600080fd5b60005460439060ff1681565b604051901515815260200160405180910390f35b604360623660046077565b60016020526000908152604090205460ff1681565b6000602082840312156087578081fd5b81356001600160a01b0381168114609c578182fd5b939250505056fea2646970667358221220511512d20d58ca495cdf7a21c4187275bb3b474fb245c7bb30d95eab87eac78e64736f6c63430008020033";
+  "0x608060405234801561001057600080fd5b5060d98061001f6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c806302ce58131460375780639b19251a146057575b600080fd5b60005460439060ff1681565b604051901515815260200160405180910390f35b604360623660046077565b60016020526000908152604090205460ff1681565b6000602082840312156087578081fd5b81356001600160a01b0381168114609c578182fd5b939250505056fea26469706673582212205fd374f877381914f4de31c27b4684f38ab22c4b4f8485f6c912e2ed1fc68f9e64736f6c63430008020033";
 
 type WhitelistConstructorParams =
   | [signer?: Signer]

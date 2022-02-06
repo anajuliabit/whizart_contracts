@@ -88,7 +88,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 100,
           },
         },
       },
@@ -122,32 +122,36 @@ task("blockNumber", "Prints the block number", async (_, { ethers }) => {
 task("add-uri", "Add availables URI to mint")
   .addPositionalParam("rarity", "The rarity")
   .setAction(
-    async (taskArgs: {
-      rarity: string;
-    }, { ethers, getNamedAccounts }) => {
-     
-    const proxy = (await import(
-      `./.openzeppelin/unknown-80001.json`
-    )) as Proxy;
+    async (
+      taskArgs: {
+        rarity: string;
+      },
+      { ethers, getNamedAccounts }
+    ) => {
+      const proxy = (await import(
+        `./.openzeppelin/unknown-80001.json`
+      )) as Proxy;
 
-    const implKeys = Object.keys(proxy.impls);
-    const WArtistContract: WArtist = await ethers.getContractAt(
-      "WArtist",
-      proxy.impls[implKeys[implKeys.length - 1]].address
-    );
-    
-    const uris = [
-      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-    ]
-    // delegates call to proxy contract
-    const contract = WArtistContract.attach(
-      proxy.proxies[proxy.proxies.length - 1].address
-    );
-    const { deployer } = await getNamedAccounts();
-    const owner = await ethers.getSigner(deployer);
-    
-    const transaction = await contract.connect(owner).addURIAvailables(Number(taskArgs.rarity), uris);
-    await transaction.wait();
+      const implKeys = Object.keys(proxy.impls);
+      const WArtistContract: WArtist = await ethers.getContractAt(
+        "WArtist",
+        proxy.impls[implKeys[implKeys.length - 1]].address
+      );
+
+      const uris = [
+        "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+        "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+      ];
+      // delegates call to proxy contract
+      const contract = WArtistContract.attach(
+        proxy.proxies[proxy.proxies.length - 1].address
+      );
+      const { deployer } = await getNamedAccounts();
+      const owner = await ethers.getSigner(deployer);
+
+      const transaction = await contract
+        .connect(owner)
+        .addAvailableURIs(Number(taskArgs.rarity), uris);
+      await transaction.wait();
     }
   );
