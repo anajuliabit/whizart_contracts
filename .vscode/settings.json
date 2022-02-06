@@ -19,8 +19,8 @@
     "yarn-error.log": true,
     "**/yarn-error.log": true,
     "packages\\eth-hooks/lib": true,
-    "**/.yalc": true,
-    "node_modules/": true
+    "**/.yalc": true
+    // "node_modules/": true
   },
   "search.exclude": {
     "**/.git": true,
