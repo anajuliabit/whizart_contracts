@@ -2,29 +2,27 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect, use } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, getChainId, upgrades } from "hardhat";
-import { WArtist } from "types/contracts";
+import { WhizartArtist } from "types/contracts";
 import { Rarity } from "utils/enums/rarity.enum";
 import { networkConfig } from "utils/network";
 
 use(solidity);
 
-describe("WArtist", function () {
-  let contract: WArtist;
+describe("WhizartArtist", function () {
+  let contract: WhizartArtist;
   let user: SignerWithAddress, user2: SignerWithAddress;
   this.beforeEach(async () => {
     [user, user2] = await ethers.getSigners();
     const chainId = await getChainId();
     const { vrfCoordinator, linkToken, keyHash } = networkConfig[chainId];
 
-    const contractFactory = await ethers.getContractFactory(
-      "contracts/WArtist.sol:WArtist"
-    );
+    const contractFactory = await ethers.getContractFactory("WhizartArtist");
 
     contract = (await upgrades.deployProxy(
       contractFactory,
       [vrfCoordinator, linkToken, keyHash],
       { kind: "uups" }
-    )) as WArtist;
+    )) as WhizartArtist;
 
     await contract.deployed();
   });

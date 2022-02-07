@@ -1,16 +1,16 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { WhizArt } from "types/contracts";
+import { WhizartToken } from "types/contracts";
 
 describe("WhizArt Token", function () {
-  let whiz: WhizArt;
+  let whiz: WhizartToken;
   let owner: SignerWithAddress, to: SignerWithAddress;
 
   this.beforeAll(async () => {
     [owner, to] = await ethers.getSigners();
-    const WhizArtToken = await ethers.getContractFactory("WhizArt");
-    whiz = (await WhizArtToken.deploy(owner.address)) as WhizArt;
+    const WhizArtToken = await ethers.getContractFactory("WhizartToken");
+    whiz = (await WhizArtToken.deploy(owner.address)) as WhizartToken;
     await whiz.deployed();
   });
 
@@ -41,7 +41,7 @@ describe("WhizArt Token", function () {
       .withArgs(owner.address, to.address, 1);
   });
 
-  it("Should be ownable", async function () {
+  it("Should has a default admin", async function () {
     const [, notOwner] = await ethers.getSigners();
 
     await expect(whiz.connect(notOwner).pause()).revertedWith(

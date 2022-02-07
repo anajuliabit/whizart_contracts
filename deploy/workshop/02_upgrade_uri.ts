@@ -1,21 +1,21 @@
 import { ContractFactory } from "ethers";
-import { ethers, network, run, tenderly, upgrades } from "hardhat";
+import { ethers, network, tenderly, upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { WhizartArtist__factory } from "types/contracts";
+import { WhizartWorkshop__factory } from "types/contracts";
 
-const contractName = "WhizartArtist";
+const contractName = "WhizartWorkshop";
 
 const func: DeployFunction = async ({
   deployments,
 }: HardhatRuntimeEnvironment) => {
   const { save } = deployments;
 
-  const contractFactory: WhizartArtist__factory =
+  const contractFactory: WhizartWorkshop__factory =
     await ethers.getContractFactory(contractName);
 
   const proxy = await upgrades.upgradeProxy(
-    "0xd02Ae92c07ED004a0564F3c4dEFB7cA63475B4Fa",
+    "0x2FE2081Ce180C30df33b9697AD450fAc8E3c6D0e",
     contractFactory as ContractFactory
   );
 
@@ -23,17 +23,13 @@ const func: DeployFunction = async ({
 
   console.log(proxy.address);
 
-  const artifact = await deployments.getExtendedArtifact("WhizartArtist");
+  const artifact = await deployments.getExtendedArtifact("WhizartWorkshop");
   const proxyDeployments = {
     address: proxy.address,
     ...artifact,
   };
 
-  await save("WArtist", proxyDeployments);
-
-  await run("verify:verify", {
-    address: proxy.address,
-  });
+  await save("Workshop", proxyDeployments);
 
   await tenderly.verify({
     name: contractName,
@@ -42,4 +38,4 @@ const func: DeployFunction = async ({
   });
 };
 export default func;
-func.tags = ["WArtist:upgrade"];
+func.tags = ["Workshop:upgrade"];

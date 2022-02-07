@@ -15,7 +15,6 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -23,9 +22,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/VRFConsumerBaseUpgradeable.sol";
 import "./utils/Whitelist.sol";
-import "hardhat/console.sol";
 
-contract Workshop is
+contract WhizartArtist is
 	Initializable,
 	ERC721Upgradeable,
 	PausableUpgradeable,
@@ -38,25 +36,54 @@ contract Workshop is
 	using CountersUpgradeable for CountersUpgradeable.Counter;
 	CountersUpgradeable.Counter public idCounter;
 
+	address payable public treasury;
+
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
 
-	event WorkshopMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
+	event ArtistMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
 	event PriceChanged(uint256 _old, uint256 _new);
 	event PaymentReceived(address sender, uint256 amount);
 	event BaseURIChanged(string _old, string _new);
 	event MintActive(bool _old, bool _new);
-	event MintSizeChanged(uint256 _old, uint256 _new);
+	event MintAmountChanged(uint256 _old, uint256 _new);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
 	event CalledRandomGenerator(bytes32 requestId);
+	event TrasuryAddressChanged(address _old, address _new);
+
+	enum Rarity {
+		NOVICE,
+		APPRENTICE,
+		JOURNEYMAN,
+		MASTER,
+		GRANDMASTER
+	}
+
+	enum PaintType {
+		GRAPHITTI,
+		ACRILIC,
+		INK,
+		FRESCO,
+		WATER_COLOR
+	}
+
+	struct Artist {
+		Rarity rarity;
+		PaintType paintType;
+		uint8 creativity;
+		uint8 colorSlots;
+	}
 
 	string public baseURI;
 
 	/// @notice Mapping from owner address to token ID's
 	mapping(address => uint256[]) public tokenIds;
 
-	string[] public notMintedURIs;
+	/// @notice Mapping from ID to Artist details
+	mapping(uint256 => Artist) public artists;
+
+	mapping(Rarity => string[]) public notMintedURIs;
 
 	mapping(uint256 => string) private tokenURIs;
 
@@ -66,7 +93,7 @@ contract Workshop is
 	mapping(bytes32 => address) private requestToSender;
 	mapping(bytes32 => uint256) private requestToTokenId;
 
-	uint256 private mintSize;
+	uint256 private mintAmount;
 	bool public mintActive;
 	uint256 public mintPrice;
 	uint256 public supplyAvailable;
@@ -74,9 +101,10 @@ contract Workshop is
 	function initialize(
 		address vrfCoordinator,
 		address linkToken,
-		bytes32 _keyHash
+		bytes32 _keyHash,
+		address _treasury
 	) public initializer {
-		__ERC721_init("Whizart Workshop", "Workshop");
+		__ERC721_init("WhizArt Artist", "WART");
 		__VRFConsumerBase_init(vrfCoordinator, linkToken);
 		__Pausable_init();
 		__AccessControl_init();
@@ -88,15 +116,17 @@ contract Workshop is
 		_setupRole(DEVELOPER_ROLE, _msgSender());
 		_setupRole(STAFF_ROLE, _msgSender());
 
+		treasury = payable(_treasury);
 		baseURI = "ipfs://";
 		whitelistActive = true;
+		// @TODO change to false when go to production
 		mintActive = true;
 		supplyAvailable = 4000;
-		mintSize = 2;
+		mintAmount = 2;
 		keyHash = _keyHash;
-		// @TODO set native token price
+		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
-		// @TODO set fee
+		// @TODO change fee when go to production
 		fee = 0.1 * 10**18;
 	}
 
@@ -110,19 +140,20 @@ contract Workshop is
 		emit PaymentReceived(_msgSender(), msg.value);
 	}
 
-	/// @notice Mints a new random Workshop
-	/// This function call chainlink VRF to generate a random Workshop
-	/// Workshops will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
-	function publicMint() external payable whenNotPaused nonReentrant {
+	/// @notice Mints a new random Artist
+	/// This function call chainlink VRF to generate a random Artist
+	/// Artist will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
+	function mint() external payable whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
-		require(idCounter.current() + 1 <= supplyAvailable, "No Artist available to mint");
-		require(msg.value == mintPrice, "Wrong amount of native token");
+		require(idCounter.current() + 1 < supplyAvailable, "No Artist available to mint");
+		require(msg.value == mintPrice, "Wrong amount of MATIC");
 
 		address to = _msgSender();
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintSize, "User buy limit reached");
+			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
+		treasury.transfer(mintPrice);
 		requestRandomToken(to);
 	}
 
@@ -248,10 +279,10 @@ contract Workshop is
 		emit PriceChanged(old, mintPrice);
 	}
 
-	function changeMintSize(uint256 _mintSize) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		uint256 old = mintSize;
-		mintSize = _mintSize;
-		emit MintSizeChanged(old, mintSize);
+	function changeMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		uint256 old = mintAmount;
+		mintAmount = _mintAmount;
+		emit MintAmountChanged(old, mintAmount);
 	}
 
 	function changeSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -260,16 +291,16 @@ contract Workshop is
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
+	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
-		return true;
 	}
 
-	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		require(address(this).balance >= _amount, "Not enough tokens");
-		payable(_to).transfer(_amount);
+	function changeTreasuryAddress(address payable to) public onlyRole(DEFAULT_ADMIN_ROLE) {
+		address old = treasury;
+		treasury = to;
+		emit TrasuryAddressChanged(old, to);
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)
@@ -283,7 +314,6 @@ contract Workshop is
 	/*
 	This section has all functions available only for MAINTENANCE_ROLE
 */
-
 	function pause() external onlyRole(MAINTENANCE_ROLE) returns (bool) {
 		_pause();
 		return true;

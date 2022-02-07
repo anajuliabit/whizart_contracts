@@ -20,17 +20,15 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import "./utils/VRFConsumerBaseUpgradeable.sol";
 import "./utils/Whitelist.sol";
 
-contract WArtist is
+contract WhizartWorkshop is
 	Initializable,
 	ERC721Upgradeable,
 	PausableUpgradeable,
 	AccessControlUpgradeable,
 	ReentrancyGuardUpgradeable,
 	UUPSUpgradeable,
-	VRFConsumerBaseUpgradeable,
 	Whitelist
 {
 	using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -38,41 +36,22 @@ contract WArtist is
 
 	address payable public treasury;
 
+	string public constant baseExtension = ".json";
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
 
-	event ArtistMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
+	event WorkshopMinted(address indexed to, uint256 indexed tokenId);
 	event PriceChanged(uint256 _old, uint256 _new);
 	event PaymentReceived(address sender, uint256 amount);
 	event BaseURIChanged(string _old, string _new);
 	event MintActive(bool _old, bool _new);
 	event MintAmountChanged(uint256 _old, uint256 _new);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
-	event CalledRandomGenerator(bytes32 requestId);
 	event TrasuryAddressChanged(address _old, address _new);
 
-	enum Rarity {
-		NOVICE,
-		APPRENTICE,
-		JOURNEYMAN,
-		MASTER,
-		GRANDMASTER
-	}
-
-	enum PaintType {
-		GRAPHITTI,
-		ACRILIC,
-		INK,
-		FRESCO,
-		WATER_COLOR
-	}
-
-	struct Artist {
-		Rarity rarity;
-		PaintType paintType;
-		uint8 creativity;
-		uint8 colorSlots;
+	struct Workshop {
+		uint8 slots;
 	}
 
 	string public baseURI;
@@ -81,31 +60,18 @@ contract WArtist is
 	mapping(address => uint256[]) public tokenIds;
 
 	/// @notice Mapping from ID to Artist details
-	mapping(uint256 => Artist) public artists;
+	mapping(uint256 => Workshop) public workshops;
 
-	mapping(Rarity => string[]) public notMintedURIs;
-
+	// @TODO delete this
 	mapping(uint256 => string) private tokenURIs;
-
-	/// @dev Chainlink VRF variables
-	bytes32 private keyHash;
-	uint256 private fee;
-	mapping(bytes32 => address) private requestToSender;
-	mapping(bytes32 => uint256) private requestToTokenId;
 
 	uint256 private mintAmount;
 	bool public mintActive;
 	uint256 public mintPrice;
 	uint256 public supplyAvailable;
 
-	function initialize(
-		address vrfCoordinator,
-		address linkToken,
-		bytes32 _keyHash,
-		address _treasury
-	) public initializer {
-		__ERC721_init("Whizart Artist", "WArtist");
-		__VRFConsumerBase_init(vrfCoordinator, linkToken);
+	function initialize(address _treasury) public initializer {
+		__ERC721_init("WhizArt Workshop", "WSHOP");
 		__Pausable_init();
 		__AccessControl_init();
 		__UUPSUpgradeable_init();
@@ -117,17 +83,14 @@ contract WArtist is
 		_setupRole(STAFF_ROLE, _msgSender());
 
 		treasury = payable(_treasury);
-		baseURI = "ipfs://";
+		baseURI = "https://anajuliabit.s3.sa-east-1.amazonaws.com/";
 		whitelistActive = true;
 		// @TODO change to false when go to production
 		mintActive = true;
 		supplyAvailable = 4000;
 		mintAmount = 2;
-		keyHash = _keyHash;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
-		// @TODO change fee when go to production
-		fee = 0.1 * 10**18;
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty
@@ -145,8 +108,10 @@ contract WArtist is
 	/// Artist will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
 	function mint() external payable whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
-		require(idCounter.current() + 1 < supplyAvailable, "No Artist available to mint");
 		require(msg.value == mintPrice, "Wrong amount of MATIC");
+		uint256 id = idCounter.current();
+
+		require(id + 1 < supplyAvailable, "No Artist available to mint");
 
 		address to = _msgSender();
 		if (whitelistActive) {
@@ -154,7 +119,14 @@ contract WArtist is
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
 		treasury.transfer(mintPrice);
-		requestRandomToken(to);
+		idCounter.increment();
+
+		_safeMint(to, id);
+		Workshop memory workshop = Workshop(1);
+		workshops[id] = workshop;
+		tokenIds[to].push(id);
+
+		emit WorkshopMinted(to, id);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
@@ -176,7 +148,7 @@ contract WArtist is
 	function tokenURI(uint256 tokenId) public view override returns (string memory) {
 		require(_exists(tokenId), "Artist doesn't exist");
 
-		return string(abi.encodePacked(_baseURI(), tokenURIs[tokenId]));
+		return string(abi.encodePacked(_baseURI(), tokenId, baseExtension));
 	}
 
 	/// @notice Will return current token supply
@@ -186,11 +158,11 @@ contract WArtist is
 
 	/// @notice This function will returns an Artist array from a specific address
 	/// @param _owner address The address to get the artists from
-	function getTokenDetailsByOwner(address _owner) external view returns (Artist[] memory) {
+	function getTokenDetailsByOwner(address _owner) external view returns (Workshop[] memory) {
 		uint256[] storage ids = tokenIds[_owner];
-		Artist[] memory result = new Artist[](ids.length);
+		Workshop[] memory result = new Workshop[](ids.length);
 		for (uint256 i = 0; i < ids.length; ++i) {
-			result[i] = artists[ids[i]];
+			result[i] = workshops[ids[i]];
 		}
 		return result;
 	}
@@ -199,21 +171,7 @@ contract WArtist is
 	This section has all functions available only for STAFF_ROLE
 */
 
-	function addAvailableURIs(Rarity rarity, string[] memory uris) external onlyRole(STAFF_ROLE) {
-		for (uint256 i = 0; i < uris.length; i++) {
-			addAvailableURI(rarity, uris[i]);
-		}
-	}
-
-	function addAvailableURI(Rarity rarity, string memory value) public onlyRole(STAFF_ROLE) {
-		notMintedURIs[rarity].push(value);
-	}
-
-	function removeAvailableURI(Rarity rarity, uint256 index) public onlyRole(STAFF_ROLE) {
-		removeURI(index, rarity);
-	}
-
-	/// @notice This will enable whitelist or "if" in publicMint()
+	/// @notice This will enable whitelist or "if" in mint()
 	function enableWhitelist() external onlyRole(STAFF_ROLE) {
 		_enableWhitelist();
 	}
@@ -339,50 +297,6 @@ contract WArtist is
 		returns (bool)
 	{
 		return super.supportsInterface(interfaceId);
-	}
-
-	/// @dev Function to request RNG from chainlink VRF
-	function requestRandomToken(address to) private {
-		require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-		uint256 id = idCounter.current();
-		bytes32 requestId = requestRandomness(keyHash, fee);
-		idCounter.increment();
-		requestToSender[requestId] = to;
-		requestToTokenId[requestId] = id;
-		emit CalledRandomGenerator(requestId);
-	}
-
-	/// @dev Function to receive VRF callback, generate random properties and mint Artist
-	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
-		Rarity rarity = Rarity(((randomNumber % 100) * 5) / 100);
-		// Test what you happen's if some other call update the artistSupplyByRarity while this call read from storage?
-		uint256 index = ((randomNumber % 1000) * notMintedURIs[rarity].length) / 1000;
-		string memory uri = notMintedURIs[rarity][index];
-		removeURI(index, rarity);
-		(index, rarity);
-
-		PaintType paintType = PaintType(((randomNumber % 10000) * 5) / 10000);
-		Artist memory artist = Artist(rarity, paintType, 1, 2);
-
-		uint256 id = requestToTokenId[requestId];
-		address sender = requestToSender[requestId];
-		_safeMint(sender, id);
-		artists[id] = artist;
-		tokenIds[sender].push(id);
-		tokenURIs[id] = uri;
-
-		emit ArtistMinted(requestId, sender, id);
-	}
-
-	// @dev Removes URI from notMintedURIs
-	function removeURI(uint256 index, Rarity rarity) private {
-		string[] storage array = notMintedURIs[rarity];
-		require(index < array.length);
-
-		array[index] = array[array.length - 1];
-		array.pop();
-
-		notMintedURIs[rarity] = array;
 	}
 
 	/// @dev Apply whenNotPaused modifier and call base function

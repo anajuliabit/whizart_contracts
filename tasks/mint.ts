@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { task } from "hardhat/config";
-import { WArtist } from "types/contracts";
+import { WhizartArtist } from "types/contracts";
 import { Proxy } from "types/proxy";
 
 task("mint", "Mint an Artist")
@@ -20,16 +20,14 @@ task("mint", "Mint an Artist")
         `.openzeppellin/${taskArgs.network}.json`
       )) as Proxy;
 
-      const contract: WArtist = await ethers.getContractAt(
+      const contract: WhizartArtist = await ethers.getContractAt(
         "Wartist",
         taskArgs.implementation,
         taskArgs.address
       );
       contract.attach(proxy.proxies[-1].address);
 
-      const request = await contract
-        .connect(taskArgs.address)
-        .publicMint();
+      const request = await contract.connect(taskArgs.address).mint();
       await request.wait();
     }
   );

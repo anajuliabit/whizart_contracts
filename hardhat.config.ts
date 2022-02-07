@@ -12,7 +12,7 @@ import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "solidity-coverage";
 import "tsconfig-paths/register";
-import { WArtist } from "types/contracts";
+import { WhizartArtist } from "types/contracts";
 import { TEthers, TUpgrades } from "types/hardhat-type-extensions";
 import { Proxy } from "types/proxy";
 
@@ -133,7 +133,7 @@ task("add-uri", "Add availables URI to mint")
       )) as Proxy;
 
       const implKeys = Object.keys(proxy.impls);
-      const WArtistContract: WArtist = await ethers.getContractAt(
+      const WArtistContract: WhizartArtist = await ethers.getContractAt(
         "WArtist",
         proxy.impls[implKeys[implKeys.length - 1]].address
       );

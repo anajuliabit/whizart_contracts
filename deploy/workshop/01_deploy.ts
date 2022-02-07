@@ -1,26 +1,24 @@
 import { ContractFactory } from "ethers";
-import { ethers, getChainId, upgrades } from "hardhat";
+import { ethers, getNamedAccounts, upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { WhizartArtist__factory } from "types/contracts";
-import { networkConfig } from "utils/network";
+import { WhizartWorkshop__factory } from "types/contracts";
 
-const contractName = "WhizartArtist";
+const contractName = "WhizartWorkshop";
 
 const func: DeployFunction = async ({
   deployments,
 }: HardhatRuntimeEnvironment) => {
   const { save } = deployments;
 
-  const contractFactory: WhizartArtist__factory =
+  const contractFactory: WhizartWorkshop__factory =
     await ethers.getContractFactory(contractName);
-  const chainId = await getChainId();
 
-  const { linkToken, vrfCoordinator, keyHash } = networkConfig[chainId];
+  const { deployer } = await getNamedAccounts();
 
   const proxy = await upgrades.deployProxy(
     contractFactory as ContractFactory,
-    [vrfCoordinator, linkToken, keyHash],
+    [deployer],
     {
       kind: "uups",
     }
@@ -30,13 +28,13 @@ const func: DeployFunction = async ({
 
   console.log(proxy.address);
 
-  const artifact = await deployments.getExtendedArtifact("WhizartArtist");
+  const artifact = await deployments.getExtendedArtifact(contractName);
   const proxyDeployments = {
     address: proxy.address,
     ...artifact,
   };
 
-  await save("WArtist", proxyDeployments);
+  await save("Workshop", proxyDeployments);
 };
 export default func;
-func.tags = ["WArtist:deploy"];
+func.tags = ["Workshop:deploy"];

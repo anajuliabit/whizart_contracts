@@ -5,14 +5,14 @@ const func: DeployFunction = async () => {
   const [owner] = await ethers.getSigners();
 
   const WArtist = await ethers.getContractFactory(
-    "contracts/WhizArt.sol:WhizArt"
+    "contracts/WhizartToken.sol:WhizartToken"
   );
   const contract = await WArtist.deploy(owner.address);
 
   console.log(contract.address);
 };
 export default func;
-func.tags = ["WhizArt"];
+func.tags = ["WHIZ"];
 
 /*
 Tenderly verification
