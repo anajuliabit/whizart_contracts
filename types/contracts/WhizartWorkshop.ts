@@ -37,7 +37,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "changeBaseURI(string)": FunctionFragment;
     "changeMintAmount(uint256)": FunctionFragment;
     "changeSupplyAvailable(uint256)": FunctionFragment;
-    "changeTreasuryAddress(address)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
@@ -48,7 +47,7 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "idCounter()": FunctionFragment;
-    "initialize(address)": FunctionFragment;
+    "initialize()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint()": FunctionFragment;
     "mintActive()": FunctionFragment;
@@ -72,12 +71,12 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "treasury()": FunctionFragment;
     "unpause()": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "whitelist(address)": FunctionFragment;
     "whitelistActive()": FunctionFragment;
+    "withdraw(address,uint256)": FunctionFragment;
     "workshops(uint256)": FunctionFragment;
   };
 
@@ -128,10 +127,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "changeTreasuryAddress",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "disableMint",
     values?: undefined
   ): string;
@@ -168,7 +163,10 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(functionFragment: "idCounter", values?: undefined): string;
-  encodeFunctionData(functionFragment: "initialize", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
@@ -243,7 +241,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "treasury", values?: undefined): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(functionFragment: "upgradeTo", values: [string]): string;
   encodeFunctionData(
@@ -254,6 +251,10 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "whitelistActive",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "workshops",
@@ -298,10 +299,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "changeSupplyAvailable",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "changeTreasuryAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -392,7 +389,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "treasury", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
   decodeFunctionResult(
@@ -404,6 +400,7 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     functionFragment: "whitelistActive",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "workshops", data: BytesLike): Result;
 
   events: {
@@ -422,7 +419,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "RoleRevoked(bytes32,address,address)": EventFragment;
     "SupplyAvailableChanged(uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "TrasuryAddressChanged(address,address)": EventFragment;
     "Unpaused(address)": EventFragment;
     "Upgraded(address)": EventFragment;
     "WhitelistChanged(address,bool,bool)": EventFragment;
@@ -445,7 +441,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SupplyAvailableChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TrasuryAddressChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WhitelistChanged"): EventFragment;
@@ -555,14 +550,6 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export type TrasuryAddressChangedEvent = TypedEvent<
-  [string, string],
-  { _old: string; _new: string }
->;
-
-export type TrasuryAddressChangedEventFilter =
-  TypedEventFilter<TrasuryAddressChangedEvent>;
-
 export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
@@ -666,11 +653,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    changeTreasuryAddress(
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -716,7 +698,6 @@ export interface WhizartWorkshop extends BaseContract {
     ): Promise<[BigNumber] & { _value: BigNumber }>;
 
     initialize(
-      _treasury: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -830,8 +811,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    treasury(overrides?: CallOverrides): Promise<[string]>;
-
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -850,6 +829,12 @@ export interface WhizartWorkshop extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     whitelistActive(overrides?: CallOverrides): Promise<[boolean]>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     workshops(
       arg0: BigNumberish,
@@ -902,11 +887,6 @@ export interface WhizartWorkshop extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  changeTreasuryAddress(
-    to: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -950,7 +930,6 @@ export interface WhizartWorkshop extends BaseContract {
   idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
   initialize(
-    _treasury: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1058,8 +1037,6 @@ export interface WhizartWorkshop extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  treasury(overrides?: CallOverrides): Promise<string>;
-
   unpause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1078,6 +1055,12 @@ export interface WhizartWorkshop extends BaseContract {
   whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
   whitelistActive(overrides?: CallOverrides): Promise<boolean>;
+
+  withdraw(
+    _to: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   workshops(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
@@ -1124,8 +1107,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    changeTreasuryAddress(to: string, overrides?: CallOverrides): Promise<void>;
-
     disableMint(overrides?: CallOverrides): Promise<void>;
 
     disableWhitelist(overrides?: CallOverrides): Promise<void>;
@@ -1160,7 +1141,7 @@ export interface WhizartWorkshop extends BaseContract {
 
     idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
-    initialize(_treasury: string, overrides?: CallOverrides): Promise<void>;
+    initialize(overrides?: CallOverrides): Promise<void>;
 
     isApprovedForAll(
       owner: string,
@@ -1256,8 +1237,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    treasury(overrides?: CallOverrides): Promise<string>;
-
     unpause(overrides?: CallOverrides): Promise<boolean>;
 
     upgradeTo(
@@ -1274,6 +1253,12 @@ export interface WhizartWorkshop extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
     whitelistActive(overrides?: CallOverrides): Promise<boolean>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     workshops(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>;
   };
@@ -1398,15 +1383,6 @@ export interface WhizartWorkshop extends BaseContract {
       tokenId?: BigNumberish | null
     ): TransferEventFilter;
 
-    "TrasuryAddressChanged(address,address)"(
-      _old?: null,
-      _new?: null
-    ): TrasuryAddressChangedEventFilter;
-    TrasuryAddressChanged(
-      _old?: null,
-      _new?: null
-    ): TrasuryAddressChangedEventFilter;
-
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
 
@@ -1489,11 +1465,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    changeTreasuryAddress(
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1540,7 +1511,6 @@ export interface WhizartWorkshop extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
-      _treasury: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1654,8 +1624,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    treasury(overrides?: CallOverrides): Promise<BigNumber>;
-
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1674,6 +1642,12 @@ export interface WhizartWorkshop extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     whitelistActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     workshops(
       arg0: BigNumberish,
@@ -1732,11 +1706,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    changeTreasuryAddress(
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1783,7 +1752,6 @@ export interface WhizartWorkshop extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
-      _treasury: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1897,8 +1865,6 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    treasury(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1920,6 +1886,12 @@ export interface WhizartWorkshop extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     whitelistActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     workshops(
       arg0: BigNumberish,

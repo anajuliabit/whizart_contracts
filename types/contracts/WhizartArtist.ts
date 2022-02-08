@@ -49,7 +49,6 @@ export interface WhizartArtistInterface extends utils.Interface {
     "changeBaseURI(string)": FunctionFragment;
     "changeMintAmount(uint256)": FunctionFragment;
     "changeSupplyAvailable(uint256)": FunctionFragment;
-    "changeTreasuryAddress(address)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
@@ -60,7 +59,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "idCounter()": FunctionFragment;
-    "initialize(address,address,bytes32,address)": FunctionFragment;
+    "initialize(address,address,bytes32)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint()": FunctionFragment;
     "mintActive()": FunctionFragment;
@@ -87,12 +86,12 @@ export interface WhizartArtistInterface extends utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "treasury()": FunctionFragment;
     "unpause()": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "whitelist(address)": FunctionFragment;
     "whitelistActive()": FunctionFragment;
+    "withdraw(address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -150,10 +149,6 @@ export interface WhizartArtistInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "changeTreasuryAddress",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "disableMint",
     values?: undefined
   ): string;
@@ -192,7 +187,7 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "idCounter", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, string, BytesLike, string]
+    values: [string, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -280,7 +275,6 @@ export interface WhizartArtistInterface extends utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "treasury", values?: undefined): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(functionFragment: "upgradeTo", values: [string]): string;
   encodeFunctionData(
@@ -291,6 +285,10 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "whitelistActive",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [string, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -336,10 +334,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "changeSupplyAvailable",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "changeTreasuryAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -442,7 +436,6 @@ export interface WhizartArtistInterface extends utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "treasury", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
   decodeFunctionResult(
@@ -454,6 +447,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     functionFragment: "whitelistActive",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -747,11 +741,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    changeTreasuryAddress(
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -800,7 +789,6 @@ export interface WhizartArtist extends BaseContract {
       vrfCoordinator: string,
       linkToken: string,
       _keyHash: BytesLike,
-      _treasury: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -932,8 +920,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    treasury(overrides?: CallOverrides): Promise<[string]>;
-
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -952,6 +938,12 @@ export interface WhizartArtist extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     whitelistActive(overrides?: CallOverrides): Promise<[boolean]>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -1021,11 +1013,6 @@ export interface WhizartArtist extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  changeTreasuryAddress(
-    to: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1072,7 +1059,6 @@ export interface WhizartArtist extends BaseContract {
     vrfCoordinator: string,
     linkToken: string,
     _keyHash: BytesLike,
-    _treasury: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1198,8 +1184,6 @@ export interface WhizartArtist extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  treasury(overrides?: CallOverrides): Promise<string>;
-
   unpause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1218,6 +1202,12 @@ export interface WhizartArtist extends BaseContract {
   whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
   whitelistActive(overrides?: CallOverrides): Promise<boolean>;
+
+  withdraw(
+    _to: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -1284,8 +1274,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    changeTreasuryAddress(to: string, overrides?: CallOverrides): Promise<void>;
-
     disableMint(overrides?: CallOverrides): Promise<void>;
 
     disableWhitelist(overrides?: CallOverrides): Promise<void>;
@@ -1324,7 +1312,6 @@ export interface WhizartArtist extends BaseContract {
       vrfCoordinator: string,
       linkToken: string,
       _keyHash: BytesLike,
-      _treasury: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1440,8 +1427,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    treasury(overrides?: CallOverrides): Promise<string>;
-
     unpause(overrides?: CallOverrides): Promise<boolean>;
 
     upgradeTo(
@@ -1458,6 +1443,12 @@ export interface WhizartArtist extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
     whitelistActive(overrides?: CallOverrides): Promise<boolean>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -1690,11 +1681,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    changeTreasuryAddress(
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1744,7 +1730,6 @@ export interface WhizartArtist extends BaseContract {
       vrfCoordinator: string,
       linkToken: string,
       _keyHash: BytesLike,
-      _treasury: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1876,8 +1861,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    treasury(overrides?: CallOverrides): Promise<BigNumber>;
-
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1896,6 +1879,12 @@ export interface WhizartArtist extends BaseContract {
     whitelist(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     whitelistActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1964,11 +1953,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    changeTreasuryAddress(
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2018,7 +2002,6 @@ export interface WhizartArtist extends BaseContract {
       vrfCoordinator: string,
       linkToken: string,
       _keyHash: BytesLike,
-      _treasury: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2150,8 +2133,6 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    treasury(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2173,5 +2154,11 @@ export interface WhizartArtist extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     whitelistActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    withdraw(
+      _to: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
   };
 }

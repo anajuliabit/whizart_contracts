@@ -1,39 +1,27 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect, use } from "chai";
 import { solidity } from "ethereum-waffle";
-import { ethers, getChainId, upgrades } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { MAINTENANCE_ROLE, STAFF_ROLE } from "test/utils/constants";
-import { WhizartArtist } from "types/contracts";
-import { Rarity } from "utils/enums/rarity.enum";
-import { networkConfig } from "utils/network";
+import { WhizartWorkshop } from "types/contracts";
 
 use(solidity);
 
-describe("WhizartArtist", function () {
-  let contract: WhizartArtist;
+describe("WhizartWorkshop", function () {
+  let contract: WhizartWorkshop;
   let deployer: SignerWithAddress,
     user: SignerWithAddress,
     user2: SignerWithAddress;
   this.beforeEach(async () => {
     [deployer, user, user2] = await ethers.getSigners();
-    const chainId = await getChainId();
-    const { vrfCoordinator, linkToken, keyHash } = networkConfig[chainId];
+    const contractFactory = await ethers.getContractFactory("WhizartWorkshop");
 
-    const contractFactory = await ethers.getContractFactory("WhizartArtist");
-
-    contract = (await upgrades.deployProxy(
-      contractFactory,
-      [vrfCoordinator, linkToken, keyHash],
-      { kind: "uups" }
-    )) as WhizartArtist;
+    contract = (await upgrades.deployProxy(contractFactory, {
+      kind: "uups",
+    })) as WhizartWorkshop;
 
     await contract.deployed();
   });
-
-  async function addAvailableURIs(rarity: Rarity, uris: string[]) {
-    const tx = await contract.addAvailableURIs(rarity, uris);
-    await tx.wait();
-  }
 
   it("Should disable whitelist", async () => {
     await expect(contract.disableWhitelist())
@@ -106,29 +94,6 @@ describe("WhizartArtist", function () {
     );
   });
 
-  it("Should add URI available to mint", async () => {
-    await addAvailableURIs(Rarity.NOVICE, ["abc", "dfg"]);
-
-    expect(await contract.notMintedURIs(Rarity.NOVICE, 0)).eq("abc");
-  });
-
-  it("Should remove the first URI from availables to mint", async () => {
-    await addAvailableURIs(Rarity.NOVICE, ["abc", "dfg"]);
-
-    const remove = await contract.removeAvailableURI(Rarity.NOVICE, 0);
-    await remove.wait();
-    expect(await contract.notMintedURIs(Rarity.NOVICE, 0)).eq("dfg");
-  });
-
-  it("Should remove the last URI from availables to mint", async () => {
-    await addAvailableURIs(Rarity.NOVICE, ["abc", "dfg"]);
-
-    const remove = await contract.removeAvailableURI(Rarity.NOVICE, 1);
-    await remove.wait();
-
-    await expect(contract.notMintedURIs(Rarity.NOVICE, 1)).to.be.reverted;
-  });
-
   it("Should enable mint", async () => {
     const disable = await contract.disableMint();
     await disable.wait();
@@ -152,7 +117,9 @@ describe("WhizartArtist", function () {
   });
 
   it("Should return baseURI", async () => {
-    expect(await contract.baseURI()).to.eq("ipfs://");
+    expect(await contract.baseURI()).to.eq(
+      "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/workshops/"
+    );
   });
 
   it("Should pause contract", async () => {
@@ -199,15 +166,33 @@ describe("WhizartArtist", function () {
     ).to.be.revertedWith("Wrong amount of MATIC");
   });
 
-  // it.only("Should request mint", async () => {
-  //   const disableWL = await contract.disableWhitelist();
-  //   await disableWL.wait();
+  it("Should mint with success", async () => {
+    const balanceBefore = await ethers.provider.getBalance(contract.address);
+    const balanceBeforeUser = await ethers.provider.getBalance(user.address);
 
-  //   await addAvailableURIs(Rarity.NOVICE, ["abc", "dfg"]);
+    const value = ethers.utils.parseUnits("0.0001");
+    await contract.addWhitelist(user.address);
+    const mint = await contract.connect(user).mint({
+      value,
+    });
+    await mint.wait();
 
-  //   const mint = await contract.publicMint({
-  //     value: ethers.utils.parseUnits("0.0001"),
+    const balanceAfter = await ethers.provider.getBalance(contract.address);
+    const balanceAfterUser = await ethers.provider.getBalance(user.address);
+
+    await expect(mint)
+      .to.emit(contract, "WorkshopMinted")
+      .withArgs(user.address, 0);
+    expect(await contract.balanceOf(user.address)).to.eq(1);
+    expect(await contract.totalSupply()).to.eq(1);
+    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(value);
+    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(value);
+  });
+
+  // it("Should sweepEthToAddress with success", async () => {
+  //   const tx = await ethers.provider.sendTransaction({
+  //     to: contract.address,
+  //     value: ethers.utils.parseUnits("1"),
   //   });
-  //   await expect(mint).emit(contract, "CalledRandomGenerator").withArgs("");
   // });
 });

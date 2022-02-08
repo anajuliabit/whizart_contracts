@@ -36,8 +36,6 @@ contract WhizartArtist is
 	using CountersUpgradeable for CountersUpgradeable.Counter;
 	CountersUpgradeable.Counter public idCounter;
 
-	address payable public treasury;
-
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
@@ -101,8 +99,7 @@ contract WhizartArtist is
 	function initialize(
 		address vrfCoordinator,
 		address linkToken,
-		bytes32 _keyHash,
-		address _treasury
+		bytes32 _keyHash
 	) public initializer {
 		__ERC721_init("WhizArt Artist", "WART");
 		__VRFConsumerBase_init(vrfCoordinator, linkToken);
@@ -116,7 +113,6 @@ contract WhizartArtist is
 		_setupRole(DEVELOPER_ROLE, _msgSender());
 		_setupRole(STAFF_ROLE, _msgSender());
 
-		treasury = payable(_treasury);
 		baseURI = "ipfs://";
 		whitelistActive = true;
 		// @TODO change to false when go to production
@@ -153,7 +149,6 @@ contract WhizartArtist is
 			require(whitelist[to] == true, "Not whitelisted");
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
-		treasury.transfer(mintPrice);
 		requestRandomToken(to);
 	}
 
@@ -297,10 +292,9 @@ contract WhizartArtist is
 		emit BaseURIChanged(old, baseURI);
 	}
 
-	function changeTreasuryAddress(address payable to) public onlyRole(DEFAULT_ADMIN_ROLE) {
-		address old = treasury;
-		treasury = to;
-		emit TrasuryAddressChanged(old, to);
+	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		require(address(this).balance >= _amount, "Not enough tokens");
+		payable(_to).transfer(_amount);
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)

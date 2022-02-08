@@ -34,8 +34,6 @@ contract WhizartWorkshop is
 	using CountersUpgradeable for CountersUpgradeable.Counter;
 	CountersUpgradeable.Counter public idCounter;
 
-	address payable public treasury;
-
 	string public constant baseExtension = ".json";
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
@@ -48,7 +46,6 @@ contract WhizartWorkshop is
 	event MintActive(bool _old, bool _new);
 	event MintAmountChanged(uint256 _old, uint256 _new);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
-	event TrasuryAddressChanged(address _old, address _new);
 
 	struct Workshop {
 		uint8 slots;
@@ -70,7 +67,7 @@ contract WhizartWorkshop is
 	uint256 public mintPrice;
 	uint256 public supplyAvailable;
 
-	function initialize(address _treasury) public initializer {
+	function initialize() public initializer {
 		__ERC721_init("WhizArt Workshop", "WSHOP");
 		__Pausable_init();
 		__AccessControl_init();
@@ -82,12 +79,11 @@ contract WhizartWorkshop is
 		_setupRole(DEVELOPER_ROLE, _msgSender());
 		_setupRole(STAFF_ROLE, _msgSender());
 
-		treasury = payable(_treasury);
-		baseURI = "https://anajuliabit.s3.sa-east-1.amazonaws.com/";
+		baseURI = "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/workshops/";
 		whitelistActive = true;
 		// @TODO change to false when go to production
 		mintActive = true;
-		supplyAvailable = 4000;
+		supplyAvailable = 10;
 		mintAmount = 2;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
@@ -111,14 +107,13 @@ contract WhizartWorkshop is
 		require(msg.value == mintPrice, "Wrong amount of MATIC");
 		uint256 id = idCounter.current();
 
-		require(id + 1 < supplyAvailable, "No Artist available to mint");
+		require(id + 1 < supplyAvailable, "No Workshop available to mint");
 
 		address to = _msgSender();
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
-		treasury.transfer(mintPrice);
 		idCounter.increment();
 
 		_safeMint(to, id);
@@ -255,10 +250,9 @@ contract WhizartWorkshop is
 		emit BaseURIChanged(old, baseURI);
 	}
 
-	function changeTreasuryAddress(address payable to) public onlyRole(DEFAULT_ADMIN_ROLE) {
-		address old = treasury;
-		treasury = to;
-		emit TrasuryAddressChanged(old, to);
+	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		require(address(this).balance >= _amount, "Not enough tokens");
+		payable(_to).transfer(_amount);
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)
