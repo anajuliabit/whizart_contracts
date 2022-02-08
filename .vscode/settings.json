@@ -41,7 +41,8 @@
     "**/obj": true,
     "yarn-error.log": true,
     "**/yarn-error.log": true,
-    "**/.yalc": true
+    "**/.yalc": true,
+    "node_modules/": true
   },
   "editor.formatOnSave": true,
   "solidity.formatter": "prettier",

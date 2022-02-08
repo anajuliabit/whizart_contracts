@@ -46,6 +46,7 @@ contract WhizartWorkshop is
 	event MintActive(bool _old, bool _new);
 	event MintAmountChanged(uint256 _old, uint256 _new);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
+	event Withdraw(address to, uint256 amount);
 
 	struct Workshop {
 		uint8 slots;
@@ -142,8 +143,8 @@ contract WhizartWorkshop is
 	/// @param tokenId uint256 Token ID
 	function tokenURI(uint256 tokenId) public view override returns (string memory) {
 		require(_exists(tokenId), "Artist doesn't exist");
-
-		return string(abi.encodePacked(_baseURI(), tokenId, baseExtension));
+		string memory id = StringsUpgradeable.toString(tokenId);
+		return string(abi.encodePacked(_baseURI(), id, baseExtension));
 	}
 
 	/// @notice Will return current token supply
@@ -226,7 +227,7 @@ contract WhizartWorkshop is
 	This section has all functions available only for DEFAULT_ADMIN_ROLE
 */
 
-	function setMintCost(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = mintPrice;
 		mintPrice = value;
 		emit PriceChanged(old, mintPrice);
@@ -251,8 +252,9 @@ contract WhizartWorkshop is
 	}
 
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		require(address(this).balance >= _amount, "Not enough tokens");
+		require(address(this).balance >= _amount, "Invalid amount");
 		payable(_to).transfer(_amount);
+		emit Withdraw(_to, _amount);
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)

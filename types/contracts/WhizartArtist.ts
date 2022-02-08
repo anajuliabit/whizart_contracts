@@ -77,7 +77,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setMintCost(uint256)": FunctionFragment;
+    "setMintPrice(uint256)": FunctionFragment;
     "supplyAvailable()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "sweepEthToAddress(address,uint256)": FunctionFragment;
@@ -243,7 +243,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     values: [string, boolean]
   ): string;
   encodeFunctionData(
-    functionFragment: "setMintCost",
+    functionFragment: "setMintPrice",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -410,7 +410,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setMintCost",
+    functionFragment: "setMintPrice",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -472,6 +472,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     "Upgraded(address)": EventFragment;
     "WhitelistChanged(address,bool,bool)": EventFragment;
     "WhitelistStatusChanged(bool,bool)": EventFragment;
+    "Withdraw(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
@@ -496,6 +497,7 @@ export interface WhizartArtistInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WhitelistChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WhitelistStatusChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
 }
 
 export type AdminChangedEvent = TypedEvent<
@@ -646,6 +648,13 @@ export type WhitelistStatusChangedEvent = TypedEvent<
 
 export type WhitelistStatusChangedEventFilter =
   TypedEventFilter<WhitelistStatusChangedEvent>;
+
+export type WithdrawEvent = TypedEvent<
+  [string, BigNumber],
+  { to: string; amount: BigNumber }
+>;
+
+export type WithdrawEventFilter = TypedEventFilter<WithdrawEvent>;
 
 export interface WhizartArtist extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -880,7 +889,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setMintCost(
+    setMintPrice(
       value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -1147,7 +1156,7 @@ export interface WhizartArtist extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setMintCost(
+  setMintPrice(
     value: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1393,7 +1402,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setMintCost(value: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    setMintPrice(value: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     supplyAvailable(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1621,6 +1630,9 @@ export interface WhizartArtist extends BaseContract {
       _old?: null,
       _new?: null
     ): WhitelistStatusChangedEventFilter;
+
+    "Withdraw(address,uint256)"(to?: null, amount?: null): WithdrawEventFilter;
+    Withdraw(to?: null, amount?: null): WithdrawEventFilter;
   };
 
   estimateGas: {
@@ -1821,7 +1833,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setMintCost(
+    setMintPrice(
       value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -2093,7 +2105,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setMintCost(
+    setMintPrice(
       value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

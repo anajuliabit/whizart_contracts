@@ -49,6 +49,7 @@ contract WhizartArtist is
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
 	event CalledRandomGenerator(bytes32 requestId);
 	event TrasuryAddressChanged(address _old, address _new);
+	event Withdraw(address to, uint256 amount);
 
 	enum Rarity {
 		NOVICE,
@@ -268,7 +269,7 @@ contract WhizartArtist is
 	This section has all functions available only for DEFAULT_ADMIN_ROLE
 */
 
-	function setMintCost(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = mintPrice;
 		mintPrice = value;
 		emit PriceChanged(old, mintPrice);
@@ -293,8 +294,9 @@ contract WhizartArtist is
 	}
 
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		require(address(this).balance >= _amount, "Not enough tokens");
+		require(address(this).balance >= _amount, "Invalid amount");
 		payable(_to).transfer(_amount);
+		emit Withdraw(_to, _amount);
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)
