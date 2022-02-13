@@ -209,7 +209,7 @@ contract WhizartArtist is
 		removeURI(index, rarity);
 	}
 
-	/// @notice This will enable whitelist or "if" in publicMint()
+	/// @notice This will enable whitelist or "if" in mint()
 	function enableWhitelist() external onlyRole(STAFF_ROLE) {
 		_enableWhitelist();
 	}
