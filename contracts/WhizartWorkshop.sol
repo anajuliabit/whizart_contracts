@@ -21,7 +21,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
-import "./utils/VRFConsumerBaseUpgradeable.sol";
 
 contract WhizartWorkshop is
 	Initializable,
@@ -30,7 +29,6 @@ contract WhizartWorkshop is
 	AccessControlUpgradeable,
 	ReentrancyGuardUpgradeable,
 	UUPSUpgradeable,
-	VRFConsumerBaseUpgradeable,
 	Whitelist
 {
 	using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -41,17 +39,18 @@ contract WhizartWorkshop is
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
 
-	event WorkshopMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
-	event PriceChanged(uint256 _old, uint256 _new);
-	event PaymentReceived(address sender, uint256 amount);
 	event BaseURIChanged(string _old, string _new);
 	event MintActive(bool _old, bool _new);
 	event MintAmountChanged(uint256 _old, uint256 _new);
+	event MintRequested(address _to, uint256 _targetBlock);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
+	event PaymentReceived(address sender, uint256 amount);
+	event PriceChanged(uint256 _old, uint256 _new);
+	event TokenMinted(address indexed to, uint256 indexed tokenId);
 	event Withdraw(address to, uint256 amount);
-	event CalledRandomGenerator(bytes32 requestId);
 
 	enum Rarity {
+		ALL_RARITIES,
 		COMMON,
 		RARE,
 		LEGENDARY
@@ -59,7 +58,12 @@ contract WhizartWorkshop is
 
 	struct Workshop {
 		Rarity rarity;
-		uint8 level;
+		uint256 level;
+	}
+
+	struct CreateWorkshopRequest {
+		uint256 targetBlock;
+		Rarity rarity;
 	}
 
 	string public baseURI;
@@ -75,24 +79,15 @@ contract WhizartWorkshop is
 	// @TODO delete this
 	mapping(uint256 => string) private tokenURIs;
 
-/// @dev Chainlink VRF variables
-	bytes32 private keyHash;
-	uint256 private fee;
-	mapping(bytes32 => address) private requestToSender;
-	mapping(bytes32 => uint256) private requestToTokenId;
+	mapping(address => CreateWorkshopRequest[]) public mintRequests;
 
 	uint256 private mintAmount;
 	bool public mintActive;
 	uint256 public mintPrice;
 	uint256 public supplyAvailable;
 
-	function initialize(
-		address vrfCoordinator,
-		address linkToken,
-		bytes32 _keyHash
-	) public initializer {
+	function initialize() public initializer {
 		__ERC721_init("WhizArt Workshop", "WSHOP");
-		__VRFConsumerBase_init(vrfCoordinator, linkToken);
 		__Pausable_init();
 		__AccessControl_init();
 		__UUPSUpgradeable_init();
@@ -109,7 +104,7 @@ contract WhizartWorkshop is
 		mintActive = true;
 		supplyAvailable = 10;
 		mintAmount = 2;
-		keyHash = _keyHash;
+		// keyHash = _keyHash;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
 	}
@@ -129,7 +124,7 @@ contract WhizartWorkshop is
 	/// Workshops will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
 	function mint() external payable whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
-		require(msg.value == mintPrice, "Wrong amount of MATIC");
+		require(msg.value == mintPrice, "Wrong amount of BNB");
 		uint256 id = idCounter.current();
 
 		require(id + 1 < supplyAvailable, "No Workshop available to mint");
@@ -140,7 +135,7 @@ contract WhizartWorkshop is
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
 
-		requestRandomToken(to);
+		requestRandomToken(to, Rarity.ALL_RARITIES);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
@@ -300,19 +295,32 @@ contract WhizartWorkshop is
 	Internal and private functions
 */
 
-	/// @dev Function to request RNG from chainlink VRF
-	function requestRandomToken(address to) private {
-		require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-		uint256 id = idCounter.current();
-		idCounter.increment();
-		bytes32 requestId = requestRandomness(keyHash, fee);
-		requestToSender[requestId] = to;
-		requestToTokenId[requestId] = id;
-		emit CalledRandomGenerator(requestId);
+	function requestRandomToken(address to, Rarity rarity) internal {
+		uint256 targetBlock = block.number + 1;
+		mintRequests[to].push(CreateWorkshopRequest(targetBlock, rarity));
+		emit MintRequested(to, targetBlock);
 	}
 
-	/// @dev Function to receive VRF callback, generate random properties and mint Artist
-	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
+	function processMintRequest() external {
+		CreateWorkshopRequest[] storage requests = mintRequests[_msgSender()];
+		for (uint256 i = requests.length; i > 0; --i) {
+			uint256 targetBlock = requests[i - 1].targetBlock;
+			require(block.number > targetBlock, "Target block not arrived");
+
+			uint256 seed = uint256(blockhash(targetBlock));
+			// @TODO
+			require(seed != 0, "Hash block isn't available");
+
+			createToken(seed);
+			requests.pop();
+		}
+	}
+
+	function createToken(uint256 seed) internal {
+		uint256 id = idCounter.current();
+		idCounter.increment();
+		uint256 randomNumber = uint256(keccak256(abi.encodePacked(seed)));
+
 		Rarity rarity = Rarity(((randomNumber % 100) * 3) / 100);
 
 		uint256 index = ((randomNumber % 1000) * notMintedURIs[rarity].length) / 1000;
@@ -322,17 +330,16 @@ contract WhizartWorkshop is
 
 		Workshop memory workshop = Workshop(rarity, 1);
 
-		uint256 id = requestToTokenId[requestId];
-		address sender = requestToSender[requestId];
+		address sender = _msgSender();
 		_safeMint(sender, id);
-		
+
 		workshops[id] = workshop;
 		tokenIds[sender].push(id);
-		tokenURIs[id] = uri;	
-		emit WorkshopMinted(requestId, sender, id);
+		tokenURIs[id] = uri;
+		emit TokenMinted(sender, id);
 	}
 
-// @dev Removes URI from notMintedURIs
+	// @dev Removes URI from notMintedURIs
 	function removeURI(uint256 index, Rarity rarity) private {
 		string[] storage array = notMintedURIs[rarity];
 		require(index < array.length);
