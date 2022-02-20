@@ -19,14 +19,23 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface VRFConsumerBaseUpgradeableInterface extends utils.Interface {
   functions: {
+    "c_0xc7243301(bytes32)": FunctionFragment;
     "rawFulfillRandomness(bytes32,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "c_0xc7243301",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "rawFulfillRandomness",
     values: [BytesLike, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "c_0xc7243301",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "rawFulfillRandomness",
     data: BytesLike
@@ -62,12 +71,22 @@ export interface VRFConsumerBaseUpgradeable extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    c_0xc7243301(
+      c__0xc7243301: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  c_0xc7243301(
+    c__0xc7243301: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   rawFulfillRandomness(
     requestId: BytesLike,
@@ -76,6 +95,11 @@ export interface VRFConsumerBaseUpgradeable extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    c_0xc7243301(
+      c__0xc7243301: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
@@ -86,6 +110,11 @@ export interface VRFConsumerBaseUpgradeable extends BaseContract {
   filters: {};
 
   estimateGas: {
+    c_0xc7243301(
+      c__0xc7243301: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,
@@ -94,6 +123,11 @@ export interface VRFConsumerBaseUpgradeable extends BaseContract {
   };
 
   populateTransaction: {
+    c_0xc7243301(
+      c__0xc7243301: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     rawFulfillRandomness(
       requestId: BytesLike,
       randomness: BigNumberish,

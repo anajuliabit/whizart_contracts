@@ -33,13 +33,26 @@ describe("WhizartWorkshop", function () {
     await contract.deployed();
   });
 
-  async function mint(to: SignerWithAddress): Promise<ContractTransaction> {
+  async function mint(
+    to: SignerWithAddress,
+    spaceBetweenBlocks = 2
+  ): Promise<{
+    mintTransaction: ContractTransaction;
+    processTransaction: ContractTransaction;
+  }> {
     await contract.connect(deployer).addWhitelist(to.address);
     const tx = await contract.connect(to).mint({
       value: MINT_PRICE,
     });
     await tx.wait();
-    return tx;
+
+    for (let index = 0; index < spaceBetweenBlocks; index++) {
+      await ethers.provider.send("evm_mine", []);
+    }
+
+    const processRequest = await contract.connect(user).processMintRequest();
+    await processRequest.wait();
+    return { mintTransaction: tx, processTransaction: processRequest };
   }
 
   it("Should return baseURI", async () => {
@@ -177,32 +190,72 @@ describe("WhizartWorkshop", function () {
     ).to.be.revertedWith("Mint is not available");
   });
 
-  it("Should revert mint if wrong amount of MATIC is sended", async () => {
+  it("Should revert mint if wrong amount of BNB is sended", async () => {
     await expect(
       contract.connect(user).mint({ value: ethers.utils.parseUnits("0.0002") })
-    ).to.be.revertedWith("Wrong amount of MATIC");
+    ).to.be.revertedWith("Wrong amount of BNB");
 
     await expect(
       contract.connect(user).mint({ value: ethers.utils.parseUnits("0.00005") })
-    ).to.be.revertedWith("Wrong amount of MATIC");
+    ).to.be.revertedWith("Wrong amount of BNB");
   });
 
   it("Should mint with success", async () => {
     const balanceBefore = await ethers.provider.getBalance(contract.address);
     const balanceBeforeUser = await ethers.provider.getBalance(user.address);
 
-    const response = await mint(user);
+    const blockNumber = await ethers.provider.getBlockNumber();
+
+    const { mintTransaction, processTransaction } = await mint(user);
 
     const balanceAfter = await ethers.provider.getBalance(contract.address);
     const balanceAfterUser = await ethers.provider.getBalance(user.address);
 
-    await expect(response)
-      .to.emit(contract, "WorkshopMinted")
+    await expect(mintTransaction)
+      .to.emit(contract, "MintRequested")
+      .withArgs(user.address, blockNumber + 3);
+    await expect(processTransaction)
+      .to.emit(contract, "TokenMinted")
       .withArgs(user.address, 0);
     expect(await contract.balanceOf(user.address)).to.eq(1);
     expect(await contract.totalSupply()).to.eq(1);
+    expect(await contract.supplyAvailable()).to.eq(9);
     expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
     expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
+  });
+
+  it("Should mint with success if target block is 256 blocks before current block ", async () => {
+    const balanceBefore = await ethers.provider.getBalance(contract.address);
+    const balanceBeforeUser = await ethers.provider.getBalance(user.address);
+
+    const blockNumber = await ethers.provider.getBlockNumber();
+
+    const { mintTransaction, processTransaction } = await mint(user, 257);
+
+    const balanceAfter = await ethers.provider.getBalance(contract.address);
+    const balanceAfterUser = await ethers.provider.getBalance(user.address);
+
+    await expect(mintTransaction)
+      .to.emit(contract, "MintRequested")
+      .withArgs(user.address, blockNumber + 3);
+    await expect(processTransaction)
+      .to.emit(contract, "TokenMinted")
+      .withArgs(user.address, 0);
+    expect(await contract.balanceOf(user.address)).to.eq(1);
+    expect(await contract.totalSupply()).to.eq(1);
+    expect(await contract.supplyAvailable()).to.eq(9);
+    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
+    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
+  });
+
+  it("Should revert mint if wrong amount of BNB is sended", async () => {
+    await expect(
+      contract.connect(user).mint({ value: ethers.utils.parseUnits("0.0002") })
+    ).to.be.revertedWith("Wrong amount of BNB");
+
+    await expect(
+      contract.connect(user).mint({ value: ethers.utils.parseUnits("0.00005") })
+    ).to.be.revertedWith("Wrong amount of BNB");
   });
 
   it("Should sweepEthToAddress with success", async () => {
@@ -268,7 +321,7 @@ describe("WhizartWorkshop", function () {
 
   it("Should change baseURI with success", async () => {
     const newBaseURI = "https://new-base-uri.com";
-    const tx = await contract.changeBaseURI(newBaseURI);
+    const tx = await contract.setBaseURI(newBaseURI);
     await tx.wait();
 
     await expect(tx)
@@ -281,14 +334,14 @@ describe("WhizartWorkshop", function () {
 
   it("Should not be able to change baseURI if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
     await expect(
-      contract.connect(user).changeBaseURI("https://new-base-uri.com")
+      contract.connect(user).setBaseURI("https://new-base-uri.com")
     ).to.be.revertedWith(
       `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
   });
 
   it("Should change supply available with success", async () => {
-    const tx = await contract.changeSupplyAvailable(100);
+    const tx = await contract.setSupplyAvailable(100);
     await tx.wait();
 
     await expect(tx)
@@ -299,21 +352,21 @@ describe("WhizartWorkshop", function () {
 
   it("Should not be able to change supply available if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
     await expect(
-      contract.connect(user).changeSupplyAvailable(100)
+      contract.connect(user).setSupplyAvailable(100)
     ).to.be.revertedWith(
       `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
   });
 
   it("Should change mint amount with success", async () => {
-    const tx = await contract.changeMintAmount(3);
+    const tx = await contract.setMintAmount(3);
     await tx.wait();
 
     await expect(tx).to.emit(contract, "MintAmountChanged").withArgs(2, 3);
   });
 
   it("Should not be able to change mint amount if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
-    await expect(contract.connect(user).changeMintAmount(3)).to.be.revertedWith(
+    await expect(contract.connect(user).setMintAmount(3)).to.be.revertedWith(
       `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
   });
@@ -342,7 +395,7 @@ describe("WhizartWorkshop", function () {
 
     const workshops = await contract.getTokenDetailsByOwner(user.address);
     expect(workshops.length).to.eq(1);
-    expect(workshops[0].slots).to.eq(1);
+    expect(workshops[0].level).to.eq(1);
   });
 
   it("Should return token URI with success", async () => {
@@ -350,5 +403,22 @@ describe("WhizartWorkshop", function () {
 
     const uri = await contract.tokenURI(0);
     expect(uri).to.eq(`${baseURI}0.json`);
+  });
+
+  it("Should change drop rate with success", async () => {
+    const tx = await contract.setDropRate([500, 300, 100]);
+    await tx.wait();
+
+    const dropRate = await contract.getDropRate();
+
+    await expect(tx)
+      .to.emit(contract, "DropRateChanged")
+      .withArgs([700, 300, 100], [500, 300, 100]);
+    expect(dropRate.length).to.be.eq(3);
+  });
+
+  it("Should return drop rate", async () => {
+    const dropRate = await contract.getDropRate();
+    await expect(dropRate.length).to.be.eq(3);
   });
 });

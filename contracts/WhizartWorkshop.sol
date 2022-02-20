@@ -10,7 +10,7 @@ https://whizart.co/
 */
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
@@ -21,6 +21,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
+import "./utils/Utils.sol";
 
 contract WhizartWorkshop is
 	Initializable,
@@ -34,50 +35,46 @@ contract WhizartWorkshop is
 	using CountersUpgradeable for CountersUpgradeable.Counter;
 	CountersUpgradeable.Counter public idCounter;
 
-	string public constant baseExtension = ".json";
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
+	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
+
+	string public constant baseExtension = ".json";
+	uint8 public constant ALL_RARITY = 0;
+	uint256 private constant maskLast8Bits = uint256(0xff);
+	uint256 private constant maskFirst248Bits = ~uint256(0xff);
 
 	event BaseURIChanged(string _old, string _new);
 	event MintActive(bool _old, bool _new);
 	event MintAmountChanged(uint256 _old, uint256 _new);
 	event MintRequested(address _to, uint256 _targetBlock);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
-	event PaymentReceived(address sender, uint256 amount);
+	event DropRateChanged(uint256[] _old, uint256[] _new);
 	event PriceChanged(uint256 _old, uint256 _new);
+	event PaymentReceived(address sender, uint256 amount);
 	event TokenMinted(address indexed to, uint256 indexed tokenId);
 	event Withdraw(address to, uint256 amount);
 
-	enum Rarity {
-		ALL_RARITIES,
-		COMMON,
-		RARE,
-		LEGENDARY
-	}
-
 	struct Workshop {
-		Rarity rarity;
-		uint256 level;
+		uint8 rarity;
+		uint8 level;
 	}
 
 	struct CreateWorkshopRequest {
 		uint256 targetBlock;
-		Rarity rarity;
+		uint8 rarity;
 	}
+
+	uint256[] private dropRate;
 
 	string public baseURI;
 
 	/// @notice Mapping from owner address to token ID's
 	mapping(address => uint256[]) public tokenIds;
 
-	/// @notice Mapping from ID to Artist details
+	/// @notice Mapping from ID to Workshop details
 	mapping(uint256 => Workshop) public workshops;
-
-	mapping(Rarity => string[]) public notMintedURIs;
-
-	// @TODO delete this
-	mapping(uint256 => string) private tokenURIs;
 
 	mapping(address => CreateWorkshopRequest[]) public mintRequests;
 
@@ -97,6 +94,7 @@ contract WhizartWorkshop is
 		_setupRole(MAINTENANCE_ROLE, _msgSender());
 		_setupRole(DEVELOPER_ROLE, _msgSender());
 		_setupRole(STAFF_ROLE, _msgSender());
+		_setupRole(DESIGNER_ROLE, _msgSender());
 
 		baseURI = "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/workshops/";
 		whitelistActive = true;
@@ -107,6 +105,7 @@ contract WhizartWorkshop is
 		// keyHash = _keyHash;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
+		dropRate = [700, 300, 100];
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty
@@ -120,14 +119,10 @@ contract WhizartWorkshop is
 	}
 
 	/// @notice Mints a new random Workshop
-	/// This function call chainlink VRF to generate a random Workshop
-	/// Workshops will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
 	function mint() external payable whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
 		require(msg.value == mintPrice, "Wrong amount of BNB");
-		uint256 id = idCounter.current();
-
-		require(id + 1 < supplyAvailable, "No Workshop available to mint");
+		require(supplyAvailable > 0, "No Workshop available to mint");
 
 		address to = _msgSender();
 		if (whitelistActive) {
@@ -135,7 +130,7 @@ contract WhizartWorkshop is
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
 
-		requestRandomToken(to, Rarity.ALL_RARITIES);
+		requestToken(to, ALL_RARITY);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
@@ -155,7 +150,7 @@ contract WhizartWorkshop is
 	/// @notice Will return the token URI
 	/// @param tokenId uint256 Token ID
 	function tokenURI(uint256 tokenId) public view override returns (string memory) {
-		require(_exists(tokenId), "Artist doesn't exist");
+		require(_exists(tokenId), "Workshop doesn't exist");
 		string memory id = StringsUpgradeable.toString(tokenId);
 		return string(abi.encodePacked(_baseURI(), id, baseExtension));
 	}
@@ -165,8 +160,8 @@ contract WhizartWorkshop is
 		return idCounter.current();
 	}
 
-	/// @notice This function will returns an Artist array from a specific address
-	/// @param _owner address The address to get the artists from
+	/// @notice This function will returns an Workshop array from a specific address
+	/// @param _owner address The address to get the workshops from
 	function getTokenDetailsByOwner(address _owner) external view returns (Workshop[] memory) {
 		uint256[] storage ids = tokenIds[_owner];
 		Workshop[] memory result = new Workshop[](ids.length);
@@ -174,6 +169,10 @@ contract WhizartWorkshop is
 			result[i] = workshops[ids[i]];
 		}
 		return result;
+	}
+
+	function getDropRate() external view returns (uint256[] memory) {
+		return dropRate;
 	}
 
 	/*
@@ -237,8 +236,18 @@ contract WhizartWorkshop is
 	}
 
 	/*
+	This section has all functions available only for DESIGNER_ROLE
+	*/
+
+	function setDropRate(uint256[] memory value) external onlyRole(DESIGNER_ROLE) {
+		uint256[] memory old = dropRate;
+		dropRate = value;
+		emit DropRateChanged(old, value);
+	}
+
+	/*
 	This section has all functions available only for DEFAULT_ADMIN_ROLE
-*/
+	*/
 
 	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = mintPrice;
@@ -246,19 +255,19 @@ contract WhizartWorkshop is
 		emit PriceChanged(old, mintPrice);
 	}
 
-	function changeMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = mintAmount;
 		mintAmount = _mintAmount;
 		emit MintAmountChanged(old, mintAmount);
 	}
 
-	function changeSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = supplyAvailable;
 		supplyAvailable = _supplyAvailable;
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
@@ -295,7 +304,7 @@ contract WhizartWorkshop is
 	Internal and private functions
 */
 
-	function requestRandomToken(address to, Rarity rarity) internal {
+	function requestToken(address to, uint8 rarity) internal {
 		uint256 targetBlock = block.number + 1;
 		mintRequests[to].push(CreateWorkshopRequest(targetBlock, rarity));
 		emit MintRequested(to, targetBlock);
@@ -308,46 +317,39 @@ contract WhizartWorkshop is
 			require(block.number > targetBlock, "Target block not arrived");
 
 			uint256 seed = uint256(blockhash(targetBlock));
-			// @TODO
-			require(seed != 0, "Hash block isn't available");
 
-			createToken(seed);
+			if (seed == 0) {
+				targetBlock = (block.number & maskFirst248Bits) + (targetBlock & maskLast8Bits);
+
+				if (targetBlock >= block.number) {
+					targetBlock -= 256;
+				}
+				seed = uint256(blockhash(targetBlock));
+			}
+
+			createToken(seed, requests[i - 1].rarity);
 			requests.pop();
 		}
 	}
 
-	function createToken(uint256 seed) internal {
+	function createToken(uint256 seed, uint8 rarity) internal {
 		uint256 id = idCounter.current();
 		idCounter.increment();
-		uint256 randomNumber = uint256(keccak256(abi.encodePacked(seed)));
+		--supplyAvailable;
 
-		Rarity rarity = Rarity(((randomNumber % 100) * 3) / 100);
+		if (rarity == ALL_RARITY) {
+			(, uint256 index) = Utils.weightedRandom(seed, dropRate);
+			rarity = uint8(index);
+		}
 
-		uint256 index = ((randomNumber % 1000) * notMintedURIs[rarity].length) / 1000;
-		string memory uri = notMintedURIs[rarity][index];
-		removeURI(index, rarity);
-		(index, rarity);
-
-		Workshop memory workshop = Workshop(rarity, 1);
+		Workshop memory workshop = Workshop(uint8(rarity), 1);
 
 		address sender = _msgSender();
 		_safeMint(sender, id);
 
 		workshops[id] = workshop;
 		tokenIds[sender].push(id);
-		tokenURIs[id] = uri;
 		emit TokenMinted(sender, id);
-	}
-
-	// @dev Removes URI from notMintedURIs
-	function removeURI(uint256 index, Rarity rarity) private {
-		string[] storage array = notMintedURIs[rarity];
-		require(index < array.length);
-
-		array[index] = array[array.length - 1];
-		array.pop();
-
-		notMintedURIs[rarity] = array;
 	}
 
 	// @TODO

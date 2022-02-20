@@ -12,9 +12,7 @@ import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "solidity-coverage";
 import "tsconfig-paths/register";
-import { WhizartArtist } from "types/contracts";
 import { TEthers, TUpgrades } from "types/hardhat-type-extensions";
-import { Proxy } from "types/proxy";
 
 declare module "hardhat/types/runtime" {
   export interface HardhatRuntimeEnvironmentExtended {
@@ -119,39 +117,39 @@ task("blockNumber", "Prints the block number", async (_, { ethers }) => {
   console.log(blockNumber);
 });
 
-task("add-uri", "Add availables URI to mint")
-  .addPositionalParam("rarity", "The rarity")
-  .setAction(
-    async (
-      taskArgs: {
-        rarity: string;
-      },
-      { ethers, getNamedAccounts }
-    ) => {
-      const proxy = (await import(
-        `./.openzeppelin/unknown-80001.json`
-      )) as Proxy;
+// task("add-uri", "Add availables URI to mint")
+//   .addPositionalParam("rarity", "The rarity")
+//   .setAction(
+//     async (
+//       taskArgs: {
+//         rarity: string;
+//       },
+//       { ethers, getNamedAccounts }
+//     ) => {
+//       const proxy = (await import(
+//         `./.openzeppelin/unknown-80001.json`
+//       )) as Proxy;
 
-      const implKeys = Object.keys(proxy.impls);
-      const WArtistContract: WhizartArtist = await ethers.getContractAt(
-        "WArtist",
-        proxy.impls[implKeys[implKeys.length - 1]].address
-      );
+//       const implKeys = Object.keys(proxy.impls);
+//       const WArtistContract: WhizartArtist = await ethers.getContractAt(
+//         "WArtist",
+//         proxy.impls[implKeys[implKeys.length - 1]].address
+//       );
 
-      const uris = [
-        "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-        "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-      ];
-      // delegates call to proxy contract
-      const contract = WArtistContract.attach(
-        proxy.proxies[proxy.proxies.length - 1].address
-      );
-      const { deployer } = await getNamedAccounts();
-      const owner = await ethers.getSigner(deployer);
+//       const uris = [
+//         "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
+//         "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
+//       ];
+//       // delegates call to proxy contract
+//       const contract = WArtistContract.attach(
+//         proxy.proxies[proxy.proxies.length - 1].address
+//       );
+//       const { deployer } = await getNamedAccounts();
+//       const owner = await ethers.getSigner(deployer);
 
-      const transaction = await contract
-        .connect(owner)
-        .addAvailableURIs(Number(taskArgs.rarity), uris);
-      await transaction.wait();
-    }
-  );
+//       const transaction = await contract
+//         .connect(owner)
+//         .addAvailableURIs(Number(taskArgs.rarity), uris);
+//       await transaction.wait();
+//     }
+//   );
