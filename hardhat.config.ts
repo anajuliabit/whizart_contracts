@@ -7,6 +7,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
 import "@tenderly/hardhat-tenderly";
 import "@typechain/hardhat";
+import { ethers } from "hardhat";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
@@ -22,6 +23,8 @@ declare module "hardhat/types/runtime" {
 }
 
 const defaultNetwork = "hardhat";
+
+const [account1, account2] = await ethers.getSigners();
 
 const config: HardhatUserConfig = {
   defaultNetwork,
@@ -40,8 +43,8 @@ const config: HardhatUserConfig = {
         process.env.RINKEBY_INFURA_KEY ?? ""
       }`,
       accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
       ],
       gasPrice: 8000000000,
       gas: 2100000,
@@ -51,33 +54,26 @@ const config: HardhatUserConfig = {
         process.env.ROPSTEN_INFURA_KEY ?? ""
       }`,
       accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
       ],
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.KOVAN_INFURA_KEY ?? ""}`,
       accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
       ],
     },
     mumbai: {
       url: process.env.MUMBAI_RPC_URL,
       accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? ""}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? ""}`,
+        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
+        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
       ],
       gasPrice: 8000000000,
       gas: 2100000,
     },
-    // matic: {
-    //   url: 'https://rpc-mainnet.maticvigil.com/',
-    //   gasPrice: 1000000000,
-    //   accounts: {
-    //     mnemonic: getMnemonic(),
-    //   },
-    // },
   },
   solidity: {
     compilers: [
