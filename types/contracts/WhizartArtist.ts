@@ -46,9 +46,6 @@ export interface WhizartArtistInterface extends utils.Interface {
     "artists(uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
-    "c_0x532e191d(bytes32)": FunctionFragment;
-    "c_0x7446084a(bytes32)": FunctionFragment;
-    "c_0xc7243301(bytes32)": FunctionFragment;
     "changeBaseURI(string)": FunctionFragment;
     "changeMintAmount(uint256)": FunctionFragment;
     "changeSupplyAvailable(uint256)": FunctionFragment;
@@ -139,18 +136,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "c_0x532e191d",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x7446084a",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0xc7243301",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "changeBaseURI",
     values: [string]
@@ -339,18 +324,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "artists", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x532e191d",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x7446084a",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xc7243301",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "changeBaseURI",
     data: BytesLike
@@ -762,21 +735,6 @@ export interface WhizartArtist extends BaseContract {
 
     baseURI(overrides?: CallOverrides): Promise<[string]>;
 
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0xc7243301(
-      c__0xc7243301: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     changeBaseURI(
       _newBaseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1049,21 +1007,6 @@ export interface WhizartArtist extends BaseContract {
 
   baseURI(overrides?: CallOverrides): Promise<string>;
 
-  c_0x532e191d(
-    c__0x532e191d: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x7446084a(
-    c__0x7446084a: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0xc7243301(
-    c__0xc7243301: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   changeBaseURI(
     _newBaseURI: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1324,21 +1267,6 @@ export interface WhizartArtist extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     baseURI(overrides?: CallOverrides): Promise<string>;
-
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0xc7243301(
-      c__0xc7243301: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     changeBaseURI(
       _newBaseURI: string,
@@ -1750,21 +1678,6 @@ export interface WhizartArtist extends BaseContract {
 
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0xc7243301(
-      c__0xc7243301: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     changeBaseURI(
       _newBaseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2036,21 +1949,6 @@ export interface WhizartArtist extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xc7243301(
-      c__0xc7243301: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     changeBaseURI(
       _newBaseURI: string,

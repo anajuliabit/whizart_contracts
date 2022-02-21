@@ -4,11 +4,10 @@
 import {
   BaseContract,
   BigNumber,
-  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
-  Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -17,30 +16,27 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface VRFConsumerBaseUpgradeableInterface extends utils.Interface {
+export interface WhizartBoxInterface extends utils.Interface {
   functions: {
-    "rawFulfillRandomness(bytes32,uint256)": FunctionFragment;
+    "mint()": FunctionFragment;
+    "workshop()": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "rawFulfillRandomness",
-    values: [BytesLike, BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "mint", values?: undefined): string;
+  encodeFunctionData(functionFragment: "workshop", values?: undefined): string;
 
-  decodeFunctionResult(
-    functionFragment: "rawFulfillRandomness",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "workshop", data: BytesLike): Result;
 
   events: {};
 }
 
-export interface VRFConsumerBaseUpgradeable extends BaseContract {
+export interface WhizartBox extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: VRFConsumerBaseUpgradeableInterface;
+  interface: WhizartBoxInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -62,42 +58,40 @@ export interface VRFConsumerBaseUpgradeable extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    mint(
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    workshop(overrides?: CallOverrides): Promise<[string]>;
   };
 
-  rawFulfillRandomness(
-    requestId: BytesLike,
-    randomness: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
+  mint(
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  workshop(overrides?: CallOverrides): Promise<string>;
+
   callStatic: {
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    mint(overrides?: CallOverrides): Promise<void>;
+
+    workshop(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    mint(
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    workshop(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    mint(
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    workshop(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

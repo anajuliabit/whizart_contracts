@@ -10,7 +10,7 @@ https://whizart.co/
 */
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
@@ -21,7 +21,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
+import "./utils/IWhizartWorkshop.sol";
 import "./utils/Utils.sol";
+import "hardhat/console.sol";
 
 contract WhizartWorkshop is
 	Initializable,
@@ -30,7 +32,8 @@ contract WhizartWorkshop is
 	AccessControlUpgradeable,
 	ReentrancyGuardUpgradeable,
 	UUPSUpgradeable,
-	Whitelist
+	Whitelist,
+	IWhizartWorkshop
 {
 	using CountersUpgradeable for CountersUpgradeable.Counter;
 	CountersUpgradeable.Counter public idCounter;
@@ -82,6 +85,7 @@ contract WhizartWorkshop is
 	bool public mintActive;
 	uint256 public mintPrice;
 	uint256 public supplyAvailable;
+	address public box;
 
 	function initialize() public initializer {
 		__ERC721_init("WhizArt Workshop", "WSHOP");
@@ -119,7 +123,7 @@ contract WhizartWorkshop is
 	}
 
 	/// @notice Mints a new random Workshop
-	function mint() external payable whenNotPaused nonReentrant {
+	function mint() external payable override whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
 		require(msg.value == mintPrice, "Wrong amount of BNB");
 		require(supplyAvailable > 0, "No Workshop available to mint");
@@ -131,6 +135,22 @@ contract WhizartWorkshop is
 		}
 
 		requestToken(to, ALL_RARITY);
+	}
+
+	/// @notice Mints a new random Workshop
+	function mintBox(address to, uint8 rarity) external payable override whenNotPaused nonReentrant {
+		console.log("workshop", _msgSender());
+		require(_msgSender() == box, "Only Box contract can mint box");
+		require(mintActive == true, "Mint is not available");
+		require(msg.value == mintPrice, "Wrong amount of BNB");
+		require(supplyAvailable > 0, "No Workshop available to mint");
+
+		if (whitelistActive) {
+			require(whitelist[to] == true, "Not whitelisted");
+			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
+		}
+
+		requestToken(to, rarity);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
@@ -271,6 +291,10 @@ contract WhizartWorkshop is
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
+	}
+
+	function setBoxyContract(address _contract) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		box = _contract;
 	}
 
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
