@@ -7,13 +7,13 @@ import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
 import "@tenderly/hardhat-tenderly";
 import "@typechain/hardhat";
-import { ethers } from "hardhat";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "solidity-coverage";
 import "tsconfig-paths/register";
 import { TEthers, TUpgrades } from "types/hardhat-type-extensions";
+import { accounts } from "utils/network";
 
 declare module "hardhat/types/runtime" {
   export interface HardhatRuntimeEnvironmentExtended {
@@ -23,8 +23,6 @@ declare module "hardhat/types/runtime" {
 }
 
 const defaultNetwork = "hardhat";
-
-const [account1, account2] = await ethers.getSigners();
 
 const config: HardhatUserConfig = {
   defaultNetwork,
@@ -42,10 +40,7 @@ const config: HardhatUserConfig = {
       url: `https://rinkeby.infura.io/v3/${
         process.env.RINKEBY_INFURA_KEY ?? ""
       }`,
-      accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
-      ],
+      accounts: accounts("rinkeby"),
       gasPrice: 8000000000,
       gas: 2100000,
     },
@@ -53,24 +48,15 @@ const config: HardhatUserConfig = {
       url: `https://ropsten.infura.io/v3/${
         process.env.ROPSTEN_INFURA_KEY ?? ""
       }`,
-      accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
-      ],
+      accounts: accounts("ropsten"),
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.KOVAN_INFURA_KEY ?? ""}`,
-      accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
-      ],
+      accounts: accounts("kovan"),
     },
     mumbai: {
-      url: process.env.MUMBAI_RPC_URL,
-      accounts: [
-        `${process.env.TESTNET_DEPLOYER_PRIV_KEY ?? account1.address}`,
-        `${process.env.TESTNET_TEST_ACCOUNT_PRIV_KEY ?? account2.address}`,
-      ],
+      url: `${process.env.MUMBAI_RPC_URL} ?? ""`,
+      accounts: accounts("mumbai"),
       gasPrice: 8000000000,
       gas: 2100000,
     },
@@ -101,6 +87,7 @@ const config: HardhatUserConfig = {
     target: "ethers-v5",
   },
 };
+
 export default config;
 
 task("accounts", "Prints the list of accounts", async (_, { ethers }) => {

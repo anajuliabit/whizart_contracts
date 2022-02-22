@@ -13,7 +13,7 @@
       "types"
     ] /* List of folders to include type definitions from. */,
     "forceConsistentCasingInFileNames": true,
-    "module": "es2022",
+    "module": "commonjs",
     "moduleResolution": "node",
     "incremental": true,
     "resolveJsonModule": true,
