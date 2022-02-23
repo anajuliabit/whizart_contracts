@@ -40,6 +40,8 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "baseExtension()": FunctionFragment;
     "baseURI()": FunctionFragment;
     "box()": FunctionFragment;
+    "c_0x4ca772aa(bytes32)": FunctionFragment;
+    "c_0x7446084a(bytes32)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
@@ -135,6 +137,14 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(functionFragment: "box", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "c_0x4ca772aa",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x7446084a",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "disableMint",
     values?: undefined
@@ -337,6 +347,14 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "box", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x4ca772aa",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x7446084a",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "disableMint",
     data: BytesLike
@@ -737,6 +755,16 @@ export interface WhizartWorkshop extends BaseContract {
 
     box(overrides?: CallOverrides): Promise<[string]>;
 
+    c_0x4ca772aa(
+      c__0x4ca772aa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -1007,6 +1035,16 @@ export interface WhizartWorkshop extends BaseContract {
 
   box(overrides?: CallOverrides): Promise<string>;
 
+  c_0x4ca772aa(
+    c__0x4ca772aa: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0x7446084a(
+    c__0x7446084a: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1263,6 +1301,16 @@ export interface WhizartWorkshop extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<string>;
 
     box(overrides?: CallOverrides): Promise<string>;
+
+    c_0x4ca772aa(
+      c__0x4ca772aa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     disableMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1671,6 +1719,16 @@ export interface WhizartWorkshop extends BaseContract {
 
     box(overrides?: CallOverrides): Promise<BigNumber>;
 
+    c_0x4ca772aa(
+      c__0x4ca772aa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1945,6 +2003,16 @@ export interface WhizartWorkshop extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     box(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    c_0x4ca772aa(
+      c__0x4ca772aa: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }

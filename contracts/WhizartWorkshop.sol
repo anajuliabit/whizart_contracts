@@ -23,7 +23,6 @@ import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
 import "./utils/IWhizartWorkshop.sol";
 import "./utils/Utils.sol";
-import "hardhat/console.sol";
 
 contract WhizartWorkshop is
 	Initializable,
@@ -43,8 +42,8 @@ contract WhizartWorkshop is
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
 	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
 
-	string public constant baseExtension = ".json";
 	uint8 public constant ALL_RARITY = 0;
+	string public constant baseExtension = ".json";
 	uint256 private constant maskLast8Bits = uint256(0xff);
 	uint256 private constant maskFirst248Bits = ~uint256(0xff);
 
@@ -139,7 +138,6 @@ contract WhizartWorkshop is
 
 	/// @notice Mints a new random Workshop
 	function mintBox(address to, uint8 rarity) external payable override whenNotPaused nonReentrant {
-		console.log("workshop", _msgSender());
 		require(_msgSender() == box, "Only Box contract can mint box");
 		require(mintActive == true, "Mint is not available");
 		require(msg.value == mintPrice, "Wrong amount of BNB");
@@ -180,6 +178,10 @@ contract WhizartWorkshop is
 		return idCounter.current();
 	}
 
+	function getDropRate() external view returns (uint256[] memory) {
+		return dropRate;
+	}
+
 	/// @notice This function will returns an Workshop array from a specific address
 	/// @param _owner address The address to get the workshops from
 	function getTokenDetailsByOwner(address _owner) external view returns (Workshop[] memory) {
@@ -189,10 +191,6 @@ contract WhizartWorkshop is
 			result[i] = workshops[ids[i]];
 		}
 		return result;
-	}
-
-	function getDropRate() external view returns (uint256[] memory) {
-		return dropRate;
 	}
 
 	/*

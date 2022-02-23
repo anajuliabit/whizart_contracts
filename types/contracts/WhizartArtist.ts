@@ -34,50 +34,54 @@ export type ArtistStructOutput = [number, number, number, number] & {
 
 export interface WhizartArtistInterface extends utils.Interface {
   functions: {
+    "ALL_RARITY()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
+    "DESIGNER_ROLE()": FunctionFragment;
     "DEVELOPER_ROLE()": FunctionFragment;
     "MAINTENANCE_ROLE()": FunctionFragment;
     "STAFF_ROLE()": FunctionFragment;
-    "addAvailableURI(uint8,string)": FunctionFragment;
-    "addAvailableURIs(uint8,string[])": FunctionFragment;
     "addWhitelist(address)": FunctionFragment;
     "addWhitelistBatch(address[])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "artists(uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "baseExtension()": FunctionFragment;
     "baseURI()": FunctionFragment;
-    "changeBaseURI(string)": FunctionFragment;
-    "changeMintAmount(uint256)": FunctionFragment;
-    "changeSupplyAvailable(uint256)": FunctionFragment;
+    "c_0x532e191d(bytes32)": FunctionFragment;
+    "c_0x7446084a(bytes32)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
     "enableWhitelist()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getDropRate()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getTokenDetailsByOwner(address)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "idCounter()": FunctionFragment;
-    "initialize(address,address,bytes32)": FunctionFragment;
+    "initialize()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint()": FunctionFragment;
     "mintActive()": FunctionFragment;
     "mintPrice()": FunctionFragment;
+    "mintRequests(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
-    "notMintedURIs(uint8,uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
-    "rawFulfillRandomness(bytes32,uint256)": FunctionFragment;
-    "removeAvailableURI(uint8,uint256)": FunctionFragment;
+    "processMintRequest()": FunctionFragment;
     "removeWhitelist(address)": FunctionFragment;
     "removeWhitelistBatch(address[])": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setBaseURI(string)": FunctionFragment;
+    "setDropRate(uint256[])": FunctionFragment;
+    "setMintAmount(uint256)": FunctionFragment;
     "setMintPrice(uint256)": FunctionFragment;
+    "setSupplyAvailable(uint256)": FunctionFragment;
     "supplyAvailable()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "sweepEthToAddress(address,uint256)": FunctionFragment;
@@ -95,7 +99,15 @@ export interface WhizartArtistInterface extends utils.Interface {
   };
 
   encodeFunctionData(
+    functionFragment: "ALL_RARITY",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "DESIGNER_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -109,14 +121,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "STAFF_ROLE",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addAvailableURI",
-    values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addAvailableURIs",
-    values: [BigNumberish, string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "addWhitelist",
@@ -135,18 +139,18 @@ export interface WhizartArtistInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "baseExtension",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "changeBaseURI",
-    values: [string]
+    functionFragment: "c_0x532e191d",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "changeMintAmount",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "changeSupplyAvailable",
-    values: [BigNumberish]
+    functionFragment: "c_0x7446084a",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "disableMint",
@@ -169,6 +173,10 @@ export interface WhizartArtistInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getDropRate",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
   ): string;
@@ -187,7 +195,7 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "idCounter", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, string, BytesLike]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -199,11 +207,11 @@ export interface WhizartArtistInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "mintPrice", values?: undefined): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "notMintedURIs",
-    values: [BigNumberish, BigNumberish]
+    functionFragment: "mintRequests",
+    values: [string, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
@@ -211,12 +219,8 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "rawFulfillRandomness",
-    values: [BytesLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeAvailableURI",
-    values: [BigNumberish, BigNumberish]
+    functionFragment: "processMintRequest",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "removeWhitelist",
@@ -242,8 +246,21 @@ export interface WhizartArtistInterface extends utils.Interface {
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
   ): string;
+  encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "setDropRate",
+    values: [BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMintAmount",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "setMintPrice",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setSupplyAvailable",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -291,8 +308,13 @@ export interface WhizartArtistInterface extends utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(functionFragment: "ALL_RARITY", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "DESIGNER_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -305,14 +327,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "STAFF_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "addAvailableURI",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "addAvailableURIs",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "addWhitelist",
     data: BytesLike
   ): Result;
@@ -323,17 +337,17 @@ export interface WhizartArtistInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "artists", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "baseExtension",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "changeBaseURI",
+    functionFragment: "c_0x532e191d",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "changeMintAmount",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "changeSupplyAvailable",
+    functionFragment: "c_0x7446084a",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -351,6 +365,10 @@ export interface WhizartArtistInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getDropRate",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -372,20 +390,16 @@ export interface WhizartArtistInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintActive", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintPrice", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "notMintedURIs",
+    functionFragment: "mintRequests",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "rawFulfillRandomness",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "removeAvailableURI",
+    functionFragment: "processMintRequest",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -409,8 +423,21 @@ export interface WhizartArtistInterface extends utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setDropRate",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMintAmount",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setMintPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setSupplyAvailable",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -453,12 +480,12 @@ export interface WhizartArtistInterface extends utils.Interface {
     "AdminChanged(address,address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "ArtistMinted(bytes32,address,uint256)": EventFragment;
     "BaseURIChanged(string,string)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
-    "CalledRandomGenerator(bytes32)": EventFragment;
+    "DropRateChanged(uint256[],uint256[])": EventFragment;
     "MintActive(bool,bool)": EventFragment;
     "MintAmountChanged(uint256,uint256)": EventFragment;
+    "MintRequested(address,uint256)": EventFragment;
     "Paused(address)": EventFragment;
     "PaymentReceived(address,uint256)": EventFragment;
     "PriceChanged(uint256,uint256)": EventFragment;
@@ -466,8 +493,8 @@ export interface WhizartArtistInterface extends utils.Interface {
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
     "SupplyAvailableChanged(uint256,uint256)": EventFragment;
+    "TokenMinted(address,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "TrasuryAddressChanged(address,address)": EventFragment;
     "Unpaused(address)": EventFragment;
     "Upgraded(address)": EventFragment;
     "WhitelistChanged(address,bool,bool)": EventFragment;
@@ -478,12 +505,12 @@ export interface WhizartArtistInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ArtistMinted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BaseURIChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CalledRandomGenerator"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DropRateChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MintActive"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MintAmountChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MintRequested"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PaymentReceived"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PriceChanged"): EventFragment;
@@ -491,8 +518,8 @@ export interface WhizartArtistInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SupplyAvailableChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TokenMinted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TrasuryAddressChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WhitelistChanged"): EventFragment;
@@ -521,13 +548,6 @@ export type ApprovalForAllEvent = TypedEvent<
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
 
-export type ArtistMintedEvent = TypedEvent<
-  [string, string, BigNumber],
-  { requestId: string; to: string; tokenId: BigNumber }
->;
-
-export type ArtistMintedEventFilter = TypedEventFilter<ArtistMintedEvent>;
-
 export type BaseURIChangedEvent = TypedEvent<
   [string, string],
   { _old: string; _new: string }
@@ -539,13 +559,12 @@ export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
-export type CalledRandomGeneratorEvent = TypedEvent<
-  [string],
-  { requestId: string }
+export type DropRateChangedEvent = TypedEvent<
+  [BigNumber[], BigNumber[]],
+  { _old: BigNumber[]; _new: BigNumber[] }
 >;
 
-export type CalledRandomGeneratorEventFilter =
-  TypedEventFilter<CalledRandomGeneratorEvent>;
+export type DropRateChangedEventFilter = TypedEventFilter<DropRateChangedEvent>;
 
 export type MintActiveEvent = TypedEvent<
   [boolean, boolean],
@@ -561,6 +580,13 @@ export type MintAmountChangedEvent = TypedEvent<
 
 export type MintAmountChangedEventFilter =
   TypedEventFilter<MintAmountChangedEvent>;
+
+export type MintRequestedEvent = TypedEvent<
+  [string, BigNumber],
+  { _to: string; _targetBlock: BigNumber }
+>;
+
+export type MintRequestedEventFilter = TypedEventFilter<MintRequestedEvent>;
 
 export type PausedEvent = TypedEvent<[string], { account: string }>;
 
@@ -610,20 +636,19 @@ export type SupplyAvailableChangedEvent = TypedEvent<
 export type SupplyAvailableChangedEventFilter =
   TypedEventFilter<SupplyAvailableChangedEvent>;
 
+export type TokenMintedEvent = TypedEvent<
+  [string, BigNumber],
+  { to: string; tokenId: BigNumber }
+>;
+
+export type TokenMintedEventFilter = TypedEventFilter<TokenMintedEvent>;
+
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber],
   { from: string; to: string; tokenId: BigNumber }
 >;
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
-
-export type TrasuryAddressChangedEvent = TypedEvent<
-  [string, string],
-  { _old: string; _new: string }
->;
-
-export type TrasuryAddressChangedEventFilter =
-  TypedEventFilter<TrasuryAddressChangedEvent>;
 
 export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 
@@ -683,25 +708,17 @@ export interface WhizartArtist extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    ALL_RARITY(overrides?: CallOverrides): Promise<[number]>;
+
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
+
+    DESIGNER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     DEVELOPER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     STAFF_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    addAvailableURI(
-      rarity: BigNumberish,
-      value: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    addAvailableURIs(
-      rarity: BigNumberish,
-      uris: string[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     addWhitelist(
       _address: string,
@@ -733,22 +750,19 @@ export interface WhizartArtist extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    baseExtension(overrides?: CallOverrides): Promise<[string]>;
+
     baseURI(overrides?: CallOverrides): Promise<[string]>;
 
-    changeBaseURI(
-      _newBaseURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
 
-    changeMintAmount(
-      _mintAmount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    changeSupplyAvailable(
-      _supplyAvailable: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -770,6 +784,8 @@ export interface WhizartArtist extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    getDropRate(overrides?: CallOverrides): Promise<[BigNumber[]]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -795,9 +811,6 @@ export interface WhizartArtist extends BaseContract {
     ): Promise<[BigNumber] & { _value: BigNumber }>;
 
     initialize(
-      vrfCoordinator: string,
-      linkToken: string,
-      _keyHash: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -815,13 +828,15 @@ export interface WhizartArtist extends BaseContract {
 
     mintPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    notMintedURIs(
-      arg0: BigNumberish,
+    mintRequests(
+      arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string]>;
+    ): Promise<
+      [BigNumber, number] & { targetBlock: BigNumber; rarity: number }
+    >;
+
+    name(overrides?: CallOverrides): Promise<[string]>;
 
     ownerOf(
       tokenId: BigNumberish,
@@ -834,15 +849,7 @@ export interface WhizartArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    removeAvailableURI(
-      rarity: BigNumberish,
-      index: BigNumberish,
+    processMintRequest(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -889,8 +896,28 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setBaseURI(
+      _newBaseURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setDropRate(
+      value: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setMintAmount(
+      _mintAmount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setMintPrice(
       value: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setSupplyAvailable(
+      _supplyAvailable: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -955,25 +982,17 @@ export interface WhizartArtist extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  ALL_RARITY(overrides?: CallOverrides): Promise<number>;
+
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
+
+  DESIGNER_ROLE(overrides?: CallOverrides): Promise<string>;
 
   DEVELOPER_ROLE(overrides?: CallOverrides): Promise<string>;
 
   MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<string>;
 
   STAFF_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  addAvailableURI(
-    rarity: BigNumberish,
-    value: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  addAvailableURIs(
-    rarity: BigNumberish,
-    uris: string[],
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   addWhitelist(
     _address: string,
@@ -1005,22 +1024,19 @@ export interface WhizartArtist extends BaseContract {
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+  baseExtension(overrides?: CallOverrides): Promise<string>;
+
   baseURI(overrides?: CallOverrides): Promise<string>;
 
-  changeBaseURI(
-    _newBaseURI: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  c_0x532e191d(
+    c__0x532e191d: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
-  changeMintAmount(
-    _mintAmount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  changeSupplyAvailable(
-    _supplyAvailable: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  c_0x7446084a(
+    c__0x7446084a: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1042,6 +1058,8 @@ export interface WhizartArtist extends BaseContract {
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  getDropRate(overrides?: CallOverrides): Promise<BigNumber[]>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -1065,9 +1083,6 @@ export interface WhizartArtist extends BaseContract {
   idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
   initialize(
-    vrfCoordinator: string,
-    linkToken: string,
-    _keyHash: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1085,13 +1100,13 @@ export interface WhizartArtist extends BaseContract {
 
   mintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-  name(overrides?: CallOverrides): Promise<string>;
-
-  notMintedURIs(
-    arg0: BigNumberish,
+  mintRequests(
+    arg0: string,
     arg1: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<string>;
+  ): Promise<[BigNumber, number] & { targetBlock: BigNumber; rarity: number }>;
+
+  name(overrides?: CallOverrides): Promise<string>;
 
   ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1101,15 +1116,7 @@ export interface WhizartArtist extends BaseContract {
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
-  rawFulfillRandomness(
-    requestId: BytesLike,
-    randomness: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  removeAvailableURI(
-    rarity: BigNumberish,
-    index: BigNumberish,
+  processMintRequest(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1156,8 +1163,28 @@ export interface WhizartArtist extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setBaseURI(
+    _newBaseURI: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setDropRate(
+    value: BigNumberish[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setMintAmount(
+    _mintAmount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setMintPrice(
     value: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setSupplyAvailable(
+    _supplyAvailable: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1219,25 +1246,17 @@ export interface WhizartArtist extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    ALL_RARITY(overrides?: CallOverrides): Promise<number>;
+
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
+
+    DESIGNER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     DEVELOPER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<string>;
 
     STAFF_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    addAvailableURI(
-      rarity: BigNumberish,
-      value: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    addAvailableURIs(
-      rarity: BigNumberish,
-      uris: string[],
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     addWhitelist(_address: string, overrides?: CallOverrides): Promise<void>;
 
@@ -1266,20 +1285,17 @@ export interface WhizartArtist extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    baseExtension(overrides?: CallOverrides): Promise<string>;
+
     baseURI(overrides?: CallOverrides): Promise<string>;
 
-    changeBaseURI(
-      _newBaseURI: string,
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    changeMintAmount(
-      _mintAmount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    changeSupplyAvailable(
-      _supplyAvailable: BigNumberish,
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1295,6 +1311,8 @@ export interface WhizartArtist extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    getDropRate(overrides?: CallOverrides): Promise<BigNumber[]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -1317,12 +1335,7 @@ export interface WhizartArtist extends BaseContract {
 
     idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
-    initialize(
-      vrfCoordinator: string,
-      linkToken: string,
-      _keyHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    initialize(overrides?: CallOverrides): Promise<void>;
 
     isApprovedForAll(
       owner: string,
@@ -1336,13 +1349,15 @@ export interface WhizartArtist extends BaseContract {
 
     mintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-    name(overrides?: CallOverrides): Promise<string>;
-
-    notMintedURIs(
-      arg0: BigNumberish,
+    mintRequests(
+      arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<string>;
+    ): Promise<
+      [BigNumber, number] & { targetBlock: BigNumber; rarity: number }
+    >;
+
+    name(overrides?: CallOverrides): Promise<string>;
 
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1350,17 +1365,7 @@ export interface WhizartArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<boolean>;
 
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    removeAvailableURI(
-      rarity: BigNumberish,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    processMintRequest(overrides?: CallOverrides): Promise<void>;
 
     removeWhitelist(_address: string, overrides?: CallOverrides): Promise<void>;
 
@@ -1402,7 +1407,24 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setBaseURI(_newBaseURI: string, overrides?: CallOverrides): Promise<void>;
+
+    setDropRate(
+      value: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMintAmount(
+      _mintAmount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setMintPrice(value: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    setSupplyAvailable(
+      _supplyAvailable: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     supplyAvailable(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1492,17 +1514,6 @@ export interface WhizartArtist extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
-    "ArtistMinted(bytes32,address,uint256)"(
-      requestId?: BytesLike | null,
-      to?: string | null,
-      tokenId?: BigNumberish | null
-    ): ArtistMintedEventFilter;
-    ArtistMinted(
-      requestId?: BytesLike | null,
-      to?: string | null,
-      tokenId?: BigNumberish | null
-    ): ArtistMintedEventFilter;
-
     "BaseURIChanged(string,string)"(
       _old?: null,
       _new?: null
@@ -1514,10 +1525,11 @@ export interface WhizartArtist extends BaseContract {
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
 
-    "CalledRandomGenerator(bytes32)"(
-      requestId?: null
-    ): CalledRandomGeneratorEventFilter;
-    CalledRandomGenerator(requestId?: null): CalledRandomGeneratorEventFilter;
+    "DropRateChanged(uint256[],uint256[])"(
+      _old?: null,
+      _new?: null
+    ): DropRateChangedEventFilter;
+    DropRateChanged(_old?: null, _new?: null): DropRateChangedEventFilter;
 
     "MintActive(bool,bool)"(_old?: null, _new?: null): MintActiveEventFilter;
     MintActive(_old?: null, _new?: null): MintActiveEventFilter;
@@ -1527,6 +1539,12 @@ export interface WhizartArtist extends BaseContract {
       _new?: null
     ): MintAmountChangedEventFilter;
     MintAmountChanged(_old?: null, _new?: null): MintAmountChangedEventFilter;
+
+    "MintRequested(address,uint256)"(
+      _to?: null,
+      _targetBlock?: null
+    ): MintRequestedEventFilter;
+    MintRequested(_to?: null, _targetBlock?: null): MintRequestedEventFilter;
 
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
@@ -1585,6 +1603,15 @@ export interface WhizartArtist extends BaseContract {
       _new?: null
     ): SupplyAvailableChangedEventFilter;
 
+    "TokenMinted(address,uint256)"(
+      to?: string | null,
+      tokenId?: BigNumberish | null
+    ): TokenMintedEventFilter;
+    TokenMinted(
+      to?: string | null,
+      tokenId?: BigNumberish | null
+    ): TokenMintedEventFilter;
+
     "Transfer(address,address,uint256)"(
       from?: string | null,
       to?: string | null,
@@ -1595,15 +1622,6 @@ export interface WhizartArtist extends BaseContract {
       to?: string | null,
       tokenId?: BigNumberish | null
     ): TransferEventFilter;
-
-    "TrasuryAddressChanged(address,address)"(
-      _old?: null,
-      _new?: null
-    ): TrasuryAddressChangedEventFilter;
-    TrasuryAddressChanged(
-      _old?: null,
-      _new?: null
-    ): TrasuryAddressChangedEventFilter;
 
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
@@ -1636,25 +1654,17 @@ export interface WhizartArtist extends BaseContract {
   };
 
   estimateGas: {
+    ALL_RARITY(overrides?: CallOverrides): Promise<BigNumber>;
+
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    DESIGNER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     DEVELOPER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     STAFF_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    addAvailableURI(
-      rarity: BigNumberish,
-      value: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    addAvailableURIs(
-      rarity: BigNumberish,
-      uris: string[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     addWhitelist(
       _address: string,
@@ -1676,21 +1686,18 @@ export interface WhizartArtist extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    baseExtension(overrides?: CallOverrides): Promise<BigNumber>;
+
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
-    changeBaseURI(
-      _newBaseURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    changeMintAmount(
-      _mintAmount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    changeSupplyAvailable(
-      _supplyAvailable: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     disableMint(
@@ -1713,6 +1720,8 @@ export interface WhizartArtist extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getDropRate(overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -1739,9 +1748,6 @@ export interface WhizartArtist extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
-      vrfCoordinator: string,
-      linkToken: string,
-      _keyHash: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1759,13 +1765,13 @@ export interface WhizartArtist extends BaseContract {
 
     mintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    notMintedURIs(
-      arg0: BigNumberish,
+    mintRequests(
+      arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    name(overrides?: CallOverrides): Promise<BigNumber>;
 
     ownerOf(
       tokenId: BigNumberish,
@@ -1778,15 +1784,7 @@ export interface WhizartArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    removeAvailableURI(
-      rarity: BigNumberish,
-      index: BigNumberish,
+    processMintRequest(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1833,8 +1831,28 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setBaseURI(
+      _newBaseURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setDropRate(
+      value: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setMintAmount(
+      _mintAmount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setMintPrice(
       value: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setSupplyAvailable(
+      _supplyAvailable: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1900,27 +1918,19 @@ export interface WhizartArtist extends BaseContract {
   };
 
   populateTransaction: {
+    ALL_RARITY(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    DESIGNER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     DEVELOPER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MAINTENANCE_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     STAFF_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    addAvailableURI(
-      rarity: BigNumberish,
-      value: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    addAvailableURIs(
-      rarity: BigNumberish,
-      uris: string[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     addWhitelist(
       _address: string,
@@ -1948,21 +1958,18 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    baseExtension(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    changeBaseURI(
-      _newBaseURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    changeMintAmount(
-      _mintAmount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    changeSupplyAvailable(
-      _supplyAvailable: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     disableMint(
@@ -1985,6 +1992,8 @@ export interface WhizartArtist extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getDropRate(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -2011,9 +2020,6 @@ export interface WhizartArtist extends BaseContract {
     idCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
-      vrfCoordinator: string,
-      linkToken: string,
-      _keyHash: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2031,13 +2037,13 @@ export interface WhizartArtist extends BaseContract {
 
     mintPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    notMintedURIs(
-      arg0: BigNumberish,
+    mintRequests(
+      arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     ownerOf(
       tokenId: BigNumberish,
@@ -2050,15 +2056,7 @@ export interface WhizartArtist extends BaseContract {
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    rawFulfillRandomness(
-      requestId: BytesLike,
-      randomness: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeAvailableURI(
-      rarity: BigNumberish,
-      index: BigNumberish,
+    processMintRequest(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2105,8 +2103,28 @@ export interface WhizartArtist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setBaseURI(
+      _newBaseURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setDropRate(
+      value: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMintAmount(
+      _mintAmount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setMintPrice(
       value: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setSupplyAvailable(
+      _supplyAvailable: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

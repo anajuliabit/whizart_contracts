@@ -20,8 +20,8 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import "./utils/VRFConsumerBaseUpgradeable.sol";
 import "./utils/Whitelist.sol";
+import "./utils/Utils.sol";
 
 contract WhizartArtist is
 	Initializable,
@@ -30,7 +30,6 @@ contract WhizartArtist is
 	AccessControlUpgradeable,
 	ReentrancyGuardUpgradeable,
 	UUPSUpgradeable,
-	VRFConsumerBaseUpgradeable,
 	Whitelist
 {
 	using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -39,25 +38,22 @@ contract WhizartArtist is
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
 	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
+	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
 
-	event ArtistMinted(bytes32 indexed requestId, address indexed to, uint256 indexed tokenId);
-	event PriceChanged(uint256 _old, uint256 _new);
+	uint8 public constant ALL_RARITY = 0;
+	uint256 private constant maskLast8Bits = uint256(0xff);
+	uint256 private constant maskFirst248Bits = ~uint256(0xff);
+
+	event MintRequested(address _to, uint256 _targetBlock);
 	event PaymentReceived(address sender, uint256 amount);
 	event BaseURIChanged(string _old, string _new);
 	event MintActive(bool _old, bool _new);
 	event MintAmountChanged(uint256 _old, uint256 _new);
 	event SupplyAvailableChanged(uint256 _old, uint256 _new);
-	event CalledRandomGenerator(bytes32 requestId);
-	event TrasuryAddressChanged(address _old, address _new);
 	event Withdraw(address to, uint256 amount);
-
-	enum Rarity {
-		NOVICE,
-		APPRENTICE,
-		JOURNEYMAN,
-		MASTER,
-		GRANDMASTER
-	}
+	event DropRateChanged(uint256[] _old, uint256[] _new);
+	event TokenMinted(address indexed to, uint256 indexed tokenId);
+	event PriceChanged(uint256 _old, uint256 _new);
 
 	enum PaintType {
 		GRAPHITTI,
@@ -68,13 +64,21 @@ contract WhizartArtist is
 	}
 
 	struct Artist {
-		Rarity rarity;
+		uint8 rarity;
 		PaintType paintType;
 		uint8 creativity;
 		uint8 colorSlots;
 	}
 
+	struct CreateArtistRequest {
+		uint256 targetBlock;
+		uint8 rarity;
+	}
+
+	uint256[] private dropRate;
+
 	string public baseURI;
+	string public constant baseExtension = ".json";
 
 	/// @notice Mapping from owner address to token ID's
 	mapping(address => uint256[]) public tokenIds;
@@ -82,28 +86,17 @@ contract WhizartArtist is
 	/// @notice Mapping from ID to Artist details
 	mapping(uint256 => Artist) public artists;
 
-	mapping(Rarity => string[]) public notMintedURIs;
-
 	mapping(uint256 => string) private tokenURIs;
 
-	/// @dev Chainlink VRF variables
-	bytes32 private keyHash;
-	uint256 private fee;
-	mapping(bytes32 => address) private requestToSender;
-	mapping(bytes32 => uint256) private requestToTokenId;
+	mapping(address => CreateArtistRequest[]) public mintRequests;
 
 	uint256 private mintAmount;
 	bool public mintActive;
 	uint256 public mintPrice;
 	uint256 public supplyAvailable;
 
-	function initialize(
-		address vrfCoordinator,
-		address linkToken,
-		bytes32 _keyHash
-	) public initializer {
+	function initialize() public initializer {
 		__ERC721_init("WhizArt Artist", "WART");
-		__VRFConsumerBase_init(vrfCoordinator, linkToken);
 		__Pausable_init();
 		__AccessControl_init();
 		__UUPSUpgradeable_init();
@@ -113,18 +106,17 @@ contract WhizartArtist is
 		_setupRole(MAINTENANCE_ROLE, _msgSender());
 		_setupRole(DEVELOPER_ROLE, _msgSender());
 		_setupRole(STAFF_ROLE, _msgSender());
+		_setupRole(DESIGNER_ROLE, _msgSender());
 
-		baseURI = "ipfs://";
+		baseURI = "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/artists/";
 		whitelistActive = true;
 		// @TODO change to false when go to production
 		mintActive = true;
-		supplyAvailable = 4000;
+		supplyAvailable = 1000;
 		mintAmount = 2;
-		keyHash = _keyHash;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
-		// @TODO change fee when go to production
-		fee = 0.1 * 10**18;
+		dropRate = [500, 300, 100, 70, 30];
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty
@@ -143,14 +135,14 @@ contract WhizartArtist is
 	function mint() external payable whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
 		require(idCounter.current() + 1 < supplyAvailable, "No Artist available to mint");
-		require(msg.value == mintPrice, "Wrong amount of MATIC");
+		require(msg.value == mintPrice, "Wrong amount of BNB");
 
 		address to = _msgSender();
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
-		requestRandomToken(to);
+		requestToken(to, ALL_RARITY);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
@@ -171,8 +163,8 @@ contract WhizartArtist is
 	/// @param tokenId uint256 Token ID
 	function tokenURI(uint256 tokenId) public view override returns (string memory) {
 		require(_exists(tokenId), "Artist doesn't exist");
-
-		return string(abi.encodePacked(_baseURI(), tokenURIs[tokenId]));
+		string memory id = StringsUpgradeable.toString(tokenId);
+		return string(abi.encodePacked(_baseURI(), id, baseExtension));
 	}
 
 	/// @notice Will return current token supply
@@ -192,22 +184,18 @@ contract WhizartArtist is
 	}
 
 	/*
+	This section has all functions available only for DESIGNER_ROLE
+	*/
+
+	function setDropRate(uint256[] memory value) external onlyRole(DESIGNER_ROLE) {
+		uint256[] memory old = dropRate;
+		dropRate = value;
+		emit DropRateChanged(old, value);
+	}
+
+	/*
 	This section has all functions available only for STAFF_ROLE
 */
-
-	function addAvailableURIs(Rarity rarity, string[] memory uris) external onlyRole(STAFF_ROLE) {
-		for (uint256 i = 0; i < uris.length; i++) {
-			addAvailableURI(rarity, uris[i]);
-		}
-	}
-
-	function addAvailableURI(Rarity rarity, string memory value) public onlyRole(STAFF_ROLE) {
-		notMintedURIs[rarity].push(value);
-	}
-
-	function removeAvailableURI(Rarity rarity, uint256 index) public onlyRole(STAFF_ROLE) {
-		removeURI(index, rarity);
-	}
 
 	/// @notice This will enable whitelist or "if" in mint()
 	function enableWhitelist() external onlyRole(STAFF_ROLE) {
@@ -275,19 +263,19 @@ contract WhizartArtist is
 		emit PriceChanged(old, mintPrice);
 	}
 
-	function changeMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = mintAmount;
 		mintAmount = _mintAmount;
 		emit MintAmountChanged(old, mintAmount);
 	}
 
-	function changeSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		uint256 old = supplyAvailable;
 		supplyAvailable = _supplyAvailable;
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-	function changeBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
@@ -297,6 +285,10 @@ contract WhizartArtist is
 		require(address(this).balance >= _amount, "Invalid amount");
 		payable(_to).transfer(_amount);
 		emit Withdraw(_to, _amount);
+	}
+
+	function getDropRate() external view returns (uint256[] memory) {
+		return dropRate;
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)
@@ -337,48 +329,57 @@ contract WhizartArtist is
 		return super.supportsInterface(interfaceId);
 	}
 
-	/// @dev Function to request RNG from chainlink VRF
-	function requestRandomToken(address to) private {
-		require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-		uint256 id = idCounter.current();
-		bytes32 requestId = requestRandomness(keyHash, fee);
-		idCounter.increment();
-		requestToSender[requestId] = to;
-		requestToTokenId[requestId] = id;
-		emit CalledRandomGenerator(requestId);
+	function requestToken(address to, uint8 rarity) private {
+		uint256 targetBlock = block.number + 1;
+		mintRequests[to].push(CreateArtistRequest(targetBlock, rarity));
+		emit MintRequested(to, targetBlock);
 	}
 
-	/// @dev Function to receive VRF callback, generate random properties and mint Artist
-	function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
-		Rarity rarity = Rarity(((randomNumber % 100) * 5) / 100);
-		// Test what you happen's if some other call update the artistSupplyByRarity while this call read from storage?
-		uint256 index = ((randomNumber % 1000) * notMintedURIs[rarity].length) / 1000;
-		string memory uri = notMintedURIs[rarity][index];
-		removeURI(index, rarity);
-		(index, rarity);
+	function processMintRequest() external {
+		CreateArtistRequest[] storage requests = mintRequests[_msgSender()];
 
-		PaintType paintType = PaintType(((randomNumber % 10000) * 5) / 10000);
-		Artist memory artist = Artist(rarity, paintType, 1, 2);
+		for (uint256 i = requests.length; i > 0; --i) {
+			uint256 targetBlock = requests[i - 1].targetBlock;
+			require(block.number > targetBlock, "Target block not arrived");
 
-		uint256 id = requestToTokenId[requestId];
-		address sender = requestToSender[requestId];
+			uint256 seed = uint256(blockhash(targetBlock));
+
+			if (seed == 0) {
+				targetBlock = (block.number & maskFirst248Bits) + (targetBlock & maskLast8Bits);
+
+				if (targetBlock >= block.number) {
+					targetBlock -= 256;
+				}
+				seed = uint256(blockhash(targetBlock));
+			}
+
+			createToken(seed, requests[i - 1].rarity);
+			requests.pop();
+		}
+	}
+
+	function createToken(uint256 seed, uint8 rarity) internal {
+		uint256 id = idCounter.current();
+		idCounter.increment();
+		--supplyAvailable;
+
+		uint256 randomRarity;
+		if (rarity == ALL_RARITY) {
+			(seed, randomRarity) = Utils.weightedRandom(seed, dropRate);
+			rarity = uint8(randomRarity);
+		}
+
+		// @TODO test
+		(, uint256 randomPaintType) = Utils.randomRange(seed, 0, 4);
+
+		Artist memory artist = Artist(uint8(rarity), PaintType(randomPaintType), 1, 2);
+
+		address sender = _msgSender();
 		_safeMint(sender, id);
+
 		artists[id] = artist;
 		tokenIds[sender].push(id);
-		tokenURIs[id] = uri;
-
-		emit ArtistMinted(requestId, sender, id);
-	}
-
-	// @dev Removes URI from notMintedURIs
-	function removeURI(uint256 index, Rarity rarity) private {
-		string[] storage array = notMintedURIs[rarity];
-		require(index < array.length);
-
-		array[index] = array[array.length - 1];
-		array.pop();
-
-		notMintedURIs[rarity] = array;
+		emit TokenMinted(sender, id);
 	}
 
 	/// @dev Apply whenNotPaused modifier and call base function

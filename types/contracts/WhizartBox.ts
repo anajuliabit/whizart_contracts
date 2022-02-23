@@ -18,13 +18,22 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface WhizartBoxInterface extends utils.Interface {
   functions: {
+    "c_0xa25ff5b0(bytes32)": FunctionFragment;
     "mint()": FunctionFragment;
     "workshop()": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "c_0xa25ff5b0",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "mint", values?: undefined): string;
   encodeFunctionData(functionFragment: "workshop", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "c_0xa25ff5b0",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "workshop", data: BytesLike): Result;
 
@@ -58,12 +67,22 @@ export interface WhizartBox extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    c_0xa25ff5b0(
+      c__0xa25ff5b0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     workshop(overrides?: CallOverrides): Promise<[string]>;
   };
+
+  c_0xa25ff5b0(
+    c__0xa25ff5b0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   mint(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -72,6 +91,11 @@ export interface WhizartBox extends BaseContract {
   workshop(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
+    c_0xa25ff5b0(
+      c__0xa25ff5b0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     mint(overrides?: CallOverrides): Promise<void>;
 
     workshop(overrides?: CallOverrides): Promise<string>;
@@ -80,6 +104,11 @@ export interface WhizartBox extends BaseContract {
   filters: {};
 
   estimateGas: {
+    c_0xa25ff5b0(
+      c__0xa25ff5b0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -88,6 +117,11 @@ export interface WhizartBox extends BaseContract {
   };
 
   populateTransaction: {
+    c_0xa25ff5b0(
+      c__0xa25ff5b0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

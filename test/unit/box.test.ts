@@ -57,7 +57,7 @@ describe("WhizartBox", function () {
     return { mintTransaction: tx, processTransaction: processRequest };
   }
 
-  it.only("Should mint with success", async () => {
+  it("Should mint with success", async () => {
     const balanceBefore = await ethers.provider.getBalance(
       workshopContract.address
     );
@@ -71,8 +71,6 @@ describe("WhizartBox", function () {
       workshopContract.address
     );
     const balanceAfterUser = await ethers.provider.getBalance(user.address);
-
-    console.log(await workshopContract.getTokenDetailsByOwner(user.address));
 
     await expect(mintTransaction)
       .to.emit(workshopContract, "MintRequested")

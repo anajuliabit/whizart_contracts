@@ -152,10 +152,6 @@ describe("WhizartWorkshop", function () {
     expect(await contract.mintActive()).to.eq(false);
   });
 
-  it("Should return baseURI", async () => {
-    expect(await contract.baseURI()).to.eq(baseURI);
-  });
-
   it("Should pause contract", async () => {
     const tx = await contract.pause();
     await tx.wait();
@@ -188,64 +184,6 @@ describe("WhizartWorkshop", function () {
     await expect(
       contract.connect(user).mint({ value: MINT_PRICE })
     ).to.be.revertedWith("Mint is not available");
-  });
-
-  it("Should revert mint if wrong amount of BNB is sended", async () => {
-    await expect(
-      contract.connect(user).mint({ value: ethers.utils.parseUnits("0.0002") })
-    ).to.be.revertedWith("Wrong amount of BNB");
-
-    await expect(
-      contract.connect(user).mint({ value: ethers.utils.parseUnits("0.00005") })
-    ).to.be.revertedWith("Wrong amount of BNB");
-  });
-
-  it("Should mint with success", async () => {
-    const balanceBefore = await ethers.provider.getBalance(contract.address);
-    const balanceBeforeUser = await ethers.provider.getBalance(user.address);
-
-    const blockNumber = await ethers.provider.getBlockNumber();
-
-    const { mintTransaction, processTransaction } = await mint(user);
-
-    const balanceAfter = await ethers.provider.getBalance(contract.address);
-    const balanceAfterUser = await ethers.provider.getBalance(user.address);
-
-    await expect(mintTransaction)
-      .to.emit(contract, "MintRequested")
-      .withArgs(user.address, blockNumber + 3);
-    await expect(processTransaction)
-      .to.emit(contract, "TokenMinted")
-      .withArgs(user.address, 0);
-    expect(await contract.balanceOf(user.address)).to.eq(1);
-    expect(await contract.totalSupply()).to.eq(1);
-    expect(await contract.supplyAvailable()).to.eq(9);
-    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
-    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
-  });
-
-  it("Should mint with success if target block is 256 blocks before current block ", async () => {
-    const balanceBefore = await ethers.provider.getBalance(contract.address);
-    const balanceBeforeUser = await ethers.provider.getBalance(user.address);
-
-    const blockNumber = await ethers.provider.getBlockNumber();
-
-    const { mintTransaction, processTransaction } = await mint(user, 257);
-
-    const balanceAfter = await ethers.provider.getBalance(contract.address);
-    const balanceAfterUser = await ethers.provider.getBalance(user.address);
-
-    await expect(mintTransaction)
-      .to.emit(contract, "MintRequested")
-      .withArgs(user.address, blockNumber + 3);
-    await expect(processTransaction)
-      .to.emit(contract, "TokenMinted")
-      .withArgs(user.address, 0);
-    expect(await contract.balanceOf(user.address)).to.eq(1);
-    expect(await contract.totalSupply()).to.eq(1);
-    expect(await contract.supplyAvailable()).to.eq(9);
-    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
-    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
   });
 
   it("Should revert mint if wrong amount of BNB is sended", async () => {
@@ -319,6 +257,96 @@ describe("WhizartWorkshop", function () {
     ).to.be.revertedWith("Invalid amount");
   });
 
+  it("Should not be able to change mint price if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
+    await expect(
+      contract.connect(user).setMintPrice(MINT_PRICE)
+    ).to.be.revertedWith(
+      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+    );
+  });
+
+  it("Should revert if mint caller was not whitelisted", async () => {
+    await expect(
+      contract.connect(user).mint({ value: MINT_PRICE })
+    ).to.be.revertedWith("Not whitelisted");
+  });
+
+  it("Should revert mint if mint is unavailable", async () => {
+    await contract.disableMint();
+    await expect(
+      contract.connect(user).mint({ value: MINT_PRICE })
+    ).to.be.revertedWith("Mint is not available");
+  });
+
+  it("Should revert mint if wrong amount of BNB is sended", async () => {
+    await expect(
+      contract.connect(user).mint({ value: ethers.utils.parseUnits("0.0002") })
+    ).to.be.revertedWith("Wrong amount of BNB");
+
+    await expect(
+      contract.connect(user).mint({ value: ethers.utils.parseUnits("0.00005") })
+    ).to.be.revertedWith("Wrong amount of BNB");
+  });
+
+  it("Should set mint price with success", async () => {
+    const newPrice = ethers.utils.parseUnits("1");
+    const tx = await contract.setMintPrice(newPrice);
+    await tx.wait();
+
+    await expect(tx)
+      .to.emit(contract, "PriceChanged")
+      .withArgs(MINT_PRICE, newPrice);
+    expect(await contract.mintPrice()).to.eq(newPrice);
+  });
+
+  it("Should mint with success", async () => {
+    const balanceBefore = await ethers.provider.getBalance(contract.address);
+    const balanceBeforeUser = await ethers.provider.getBalance(user.address);
+
+    const blockNumber = await ethers.provider.getBlockNumber();
+
+    const { mintTransaction, processTransaction } = await mint(user);
+
+    const balanceAfter = await ethers.provider.getBalance(contract.address);
+    const balanceAfterUser = await ethers.provider.getBalance(user.address);
+
+    await expect(mintTransaction)
+      .to.emit(contract, "MintRequested")
+      .withArgs(user.address, blockNumber + 3);
+    await expect(processTransaction)
+      .to.emit(contract, "TokenMinted")
+      .withArgs(user.address, 0);
+    expect(await contract.balanceOf(user.address)).to.eq(1);
+    expect(await contract.totalSupply()).to.eq(1);
+    expect(await contract.supplyAvailable()).to.eq(9);
+    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
+    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
+  });
+
+  it("Should mint with success if target block is 256 blocks before current block ", async () => {
+    const balanceBefore = await ethers.provider.getBalance(contract.address);
+    const balanceBeforeUser = await ethers.provider.getBalance(user.address);
+
+    const blockNumber = await ethers.provider.getBlockNumber();
+
+    const { mintTransaction, processTransaction } = await mint(user, 257);
+
+    const balanceAfter = await ethers.provider.getBalance(contract.address);
+    const balanceAfterUser = await ethers.provider.getBalance(user.address);
+
+    await expect(mintTransaction)
+      .to.emit(contract, "MintRequested")
+      .withArgs(user.address, blockNumber + 3);
+    await expect(processTransaction)
+      .to.emit(contract, "TokenMinted")
+      .withArgs(user.address, 0);
+    expect(await contract.balanceOf(user.address)).to.eq(1);
+    expect(await contract.totalSupply()).to.eq(1);
+    expect(await contract.supplyAvailable()).to.eq(9);
+    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
+    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
+  });
+
   it("Should change baseURI with success", async () => {
     const newBaseURI = "https://new-base-uri.com";
     const tx = await contract.setBaseURI(newBaseURI);
@@ -367,25 +395,6 @@ describe("WhizartWorkshop", function () {
 
   it("Should not be able to change mint amount if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
     await expect(contract.connect(user).setMintAmount(3)).to.be.revertedWith(
-      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
-    );
-  });
-
-  it("Should set mint price with success", async () => {
-    const newPrice = ethers.utils.parseUnits("1");
-    const tx = await contract.setMintPrice(newPrice);
-    await tx.wait();
-
-    await expect(tx)
-      .to.emit(contract, "PriceChanged")
-      .withArgs(MINT_PRICE, newPrice);
-    expect(await contract.mintPrice()).to.eq(newPrice);
-  });
-
-  it("Should not be able to change mint price if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
-    await expect(
-      contract.connect(user).setMintPrice(MINT_PRICE)
-    ).to.be.revertedWith(
       `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
   });
