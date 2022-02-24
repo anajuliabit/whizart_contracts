@@ -12,7 +12,7 @@ https://whizart.co/
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-interface IWhizartWorkshop {
+interface IWhizartArtist {
 	function mint() external payable;
 
 	function mintBox(address to, uint8 rarity) external payable;

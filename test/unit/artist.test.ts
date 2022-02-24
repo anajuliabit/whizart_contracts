@@ -6,7 +6,7 @@ import { ethers, upgrades } from "hardhat";
 import {
   DEFAULT_ADMIN_ROLE,
   MAINTENANCE_ROLE,
-  MINT_PRICE,
+  MINT_PRICE_ARTIST,
   STAFF_ROLE,
 } from "test/utils/constants";
 import { WhizartArtist } from "types/contracts";
@@ -43,7 +43,7 @@ describe("WhizartArtist", function () {
   }> {
     await contract.connect(deployer).addWhitelist(to.address);
     const tx = await contract.connect(to).mint({
-      value: MINT_PRICE,
+      value: MINT_PRICE_ARTIST,
     });
     await tx.wait();
 
@@ -233,20 +233,20 @@ describe("WhizartArtist", function () {
     await mint(user);
     const balanceBefore = await ethers.provider.getBalance(treasury.address);
 
-    const tx = await contract.withdraw(treasury.address, MINT_PRICE);
+    const tx = await contract.withdraw(treasury.address, MINT_PRICE_ARTIST);
     await tx.wait();
 
     const balanceAfter = await ethers.provider.getBalance(treasury.address);
     await expect(tx)
       .to.emit(contract, "Withdraw")
-      .withArgs(treasury.address, MINT_PRICE);
+      .withArgs(treasury.address, MINT_PRICE_ARTIST);
     expect(await ethers.provider.getBalance(contract.address)).to.eq(0);
-    expect(balanceAfter.sub(balanceBefore)).to.at.least(MINT_PRICE);
+    expect(balanceAfter.sub(balanceBefore)).to.at.least(MINT_PRICE_ARTIST);
   });
 
   it("Should revert if withdraw caller has not DEFAULT_ADMIN_ROLE", async () => {
     await expect(
-      contract.connect(user2).withdraw(treasury.address, MINT_PRICE)
+      contract.connect(user2).withdraw(treasury.address, MINT_PRICE_ARTIST)
     ).to.be.revertedWith(
       `AccessControl: account ${user2.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
@@ -254,13 +254,13 @@ describe("WhizartArtist", function () {
 
   it("Should revert if contract hasn't withdraw amount", async () => {
     await expect(
-      contract.connect(deployer).withdraw(treasury.address, MINT_PRICE)
+      contract.connect(deployer).withdraw(treasury.address, MINT_PRICE_ARTIST)
     ).to.be.revertedWith("Invalid amount");
   });
 
   it("Should not be able to change mint price if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
     await expect(
-      contract.connect(user).setMintPrice(MINT_PRICE)
+      contract.connect(user).setMintPrice(MINT_PRICE_ARTIST)
     ).to.be.revertedWith(
       `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
@@ -268,14 +268,14 @@ describe("WhizartArtist", function () {
 
   it("Should revert if mint caller was not whitelisted", async () => {
     await expect(
-      contract.connect(user).mint({ value: MINT_PRICE })
+      contract.connect(user).mint({ value: MINT_PRICE_ARTIST })
     ).to.be.revertedWith("Not whitelisted");
   });
 
   it("Should revert mint if mint is unavailable", async () => {
     await contract.disableMint();
     await expect(
-      contract.connect(user).mint({ value: MINT_PRICE })
+      contract.connect(user).mint({ value: MINT_PRICE_ARTIST })
     ).to.be.revertedWith("Mint is not available");
   });
 
@@ -296,8 +296,8 @@ describe("WhizartArtist", function () {
 
     await expect(tx)
       .to.emit(contract, "PriceChanged")
-      .withArgs(MINT_PRICE, newPrice);
-    expect(await contract.mintPrice()).to.eq(newPrice);
+      .withArgs(MINT_PRICE_ARTIST, newPrice);
+    expect(await contract.getMintPrice()).to.eq(newPrice);
   });
 
   it("Should mint with success", async () => {
@@ -320,8 +320,10 @@ describe("WhizartArtist", function () {
     expect(await contract.balanceOf(user.address)).to.eq(1);
     expect(await contract.totalSupply()).to.eq(1);
     expect(await contract.supplyAvailable()).to.eq(999);
-    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
-    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
+    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE_ARTIST);
+    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(
+      MINT_PRICE_ARTIST
+    );
   });
 
   it("Should mint with success if target block is 256 blocks before current block ", async () => {
@@ -344,8 +346,10 @@ describe("WhizartArtist", function () {
     expect(await contract.balanceOf(user.address)).to.eq(1);
     expect(await contract.totalSupply()).to.eq(1);
     expect(await contract.supplyAvailable()).to.eq(999);
-    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE);
-    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
+    expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE_ARTIST);
+    expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(
+      MINT_PRICE_ARTIST
+    );
   });
 
   it("Should change baseURI with success", async () => {

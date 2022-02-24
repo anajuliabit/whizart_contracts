@@ -4,9 +4,11 @@
 import {
   BaseContract,
   BigNumber,
+  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
+  Overrides,
   PayableOverrides,
   PopulatedTransaction,
   Signer,
@@ -16,30 +18,39 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface WhizartBoxInterface extends utils.Interface {
+export interface IWhizartArtistInterface extends utils.Interface {
   functions: {
-    "artist()": FunctionFragment;
+    "getMintPrice()": FunctionFragment;
     "mint()": FunctionFragment;
-    "workshop()": FunctionFragment;
+    "mintBox(address,uint8)": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "artist", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getMintPrice",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "mint", values?: undefined): string;
-  encodeFunctionData(functionFragment: "workshop", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "mintBox",
+    values: [string, BigNumberish]
+  ): string;
 
-  decodeFunctionResult(functionFragment: "artist", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getMintPrice",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "workshop", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "mintBox", data: BytesLike): Result;
 
   events: {};
 }
 
-export interface WhizartBox extends BaseContract {
+export interface IWhizartArtist extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: WhizartBoxInterface;
+  interface: IWhizartArtistInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -61,50 +72,78 @@ export interface WhizartBox extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    artist(overrides?: CallOverrides): Promise<[string]>;
+    getMintPrice(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    workshop(overrides?: CallOverrides): Promise<[string]>;
+    mintBox(
+      to: string,
+      rarity: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  artist(overrides?: CallOverrides): Promise<string>;
+  getMintPrice(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   mint(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  workshop(overrides?: CallOverrides): Promise<string>;
+  mintBox(
+    to: string,
+    rarity: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    artist(overrides?: CallOverrides): Promise<string>;
+    getMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(overrides?: CallOverrides): Promise<void>;
 
-    workshop(overrides?: CallOverrides): Promise<string>;
+    mintBox(
+      to: string,
+      rarity: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {};
 
   estimateGas: {
-    artist(overrides?: CallOverrides): Promise<BigNumber>;
+    getMintPrice(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    workshop(overrides?: CallOverrides): Promise<BigNumber>;
+    mintBox(
+      to: string,
+      rarity: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    artist(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getMintPrice(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    workshop(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    mintBox(
+      to: string,
+      rarity: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
   };
 }

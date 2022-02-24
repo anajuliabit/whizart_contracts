@@ -22,6 +22,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
 import "./utils/Utils.sol";
+import "./utils/IWhizartArtist.sol";
 
 contract WhizartArtist is
 	Initializable,
@@ -30,7 +31,8 @@ contract WhizartArtist is
 	AccessControlUpgradeable,
 	ReentrancyGuardUpgradeable,
 	UUPSUpgradeable,
-	Whitelist
+	Whitelist,
+	IWhizartArtist
 {
 	using CountersUpgradeable for CountersUpgradeable.Counter;
 	CountersUpgradeable.Counter public idCounter;
@@ -92,8 +94,9 @@ contract WhizartArtist is
 
 	uint256 private mintAmount;
 	bool public mintActive;
-	uint256 public mintPrice;
+	uint256 private mintPrice;
 	uint256 public supplyAvailable;
+	address public box;
 
 	function initialize() public initializer {
 		__ERC721_init("WhizArt Artist", "WART");
@@ -132,7 +135,7 @@ contract WhizartArtist is
 	/// @notice Mints a new random Artist
 	/// This function call chainlink VRF to generate a random Artist
 	/// Artist will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
-	function mint() external payable whenNotPaused nonReentrant {
+	function mint() external payable override whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
 		require(idCounter.current() + 1 < supplyAvailable, "No Artist available to mint");
 		require(msg.value == mintPrice, "Wrong amount of BNB");
@@ -143,6 +146,21 @@ contract WhizartArtist is
 			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
 		}
 		requestToken(to, ALL_RARITY);
+	}
+
+	/// @notice Mints a new random Workshop
+	function mintBox(address to, uint8 rarity) external payable override whenNotPaused nonReentrant {
+		require(_msgSender() == box, "Only Box contract can mint box");
+		require(mintActive == true, "Mint is not available");
+		require(msg.value == mintPrice, "Wrong amount of BNB");
+		require(supplyAvailable > 0, "No Workshop available to mint");
+
+		if (whitelistActive) {
+			require(whitelist[to] == true, "Not whitelisted");
+			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
+		}
+
+		requestToken(to, rarity);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
@@ -281,6 +299,10 @@ contract WhizartArtist is
 		emit BaseURIChanged(old, baseURI);
 	}
 
+	function setBoxyContract(address _contract) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		box = _contract;
+	}
+
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		require(address(this).balance >= _amount, "Invalid amount");
 		payable(_to).transfer(_amount);
@@ -289,6 +311,10 @@ contract WhizartArtist is
 
 	function getDropRate() external view returns (uint256[] memory) {
 		return dropRate;
+	}
+
+	function getMintPrice() external view override returns (uint256) {
+		return mintPrice;
 	}
 
 	/// @notice function useful for accidental ETH transfers to contract (to user address)

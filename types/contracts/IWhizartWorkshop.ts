@@ -8,6 +8,7 @@ import {
   BytesLike,
   CallOverrides,
   ContractTransaction,
+  Overrides,
   PayableOverrides,
   PopulatedTransaction,
   Signer,
@@ -19,16 +20,25 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface IWhizartWorkshopInterface extends utils.Interface {
   functions: {
+    "getMintPrice()": FunctionFragment;
     "mint()": FunctionFragment;
     "mintBox(address,uint8)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "getMintPrice",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "mint", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mintBox",
     values: [string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "getMintPrice",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintBox", data: BytesLike): Result;
 
@@ -62,6 +72,10 @@ export interface IWhizartWorkshop extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    getMintPrice(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -72,6 +86,10 @@ export interface IWhizartWorkshop extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  getMintPrice(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   mint(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -84,6 +102,8 @@ export interface IWhizartWorkshop extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    getMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
     mint(overrides?: CallOverrides): Promise<void>;
 
     mintBox(
@@ -96,6 +116,10 @@ export interface IWhizartWorkshop extends BaseContract {
   filters: {};
 
   estimateGas: {
+    getMintPrice(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -108,6 +132,10 @@ export interface IWhizartWorkshop extends BaseContract {
   };
 
   populateTransaction: {
+    getMintPrice(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

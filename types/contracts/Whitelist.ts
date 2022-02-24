@@ -16,25 +16,16 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface WhitelistInterface extends utils.Interface {
   functions: {
-    "c_0x7446084a(bytes32)": FunctionFragment;
     "whitelist(address)": FunctionFragment;
     "whitelistActive()": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "c_0x7446084a",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(functionFragment: "whitelist", values: [string]): string;
   encodeFunctionData(
     functionFragment: "whitelistActive",
     values?: undefined
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "c_0x7446084a",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "whitelist", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "whitelistActive",
@@ -93,31 +84,16 @@ export interface Whitelist extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     whitelist(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     whitelistActive(overrides?: CallOverrides): Promise<[boolean]>;
   };
-
-  c_0x7446084a(
-    c__0x7446084a: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
 
   whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
   whitelistActive(overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     whitelist(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
     whitelistActive(overrides?: CallOverrides): Promise<boolean>;
@@ -146,22 +122,12 @@ export interface Whitelist extends BaseContract {
   };
 
   estimateGas: {
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     whitelist(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     whitelistActive(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     whitelist(
       arg0: string,
       overrides?: CallOverrides

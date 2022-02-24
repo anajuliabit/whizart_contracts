@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import type {
-  IWhizartWorkshop,
-  IWhizartWorkshopInterface,
-} from "../IWhizartWorkshop";
+  IWhizartArtist,
+  IWhizartArtistInterface,
+} from "../IWhizartArtist";
 
 const _abi = [
   {
@@ -50,15 +50,15 @@ const _abi = [
   },
 ];
 
-export class IWhizartWorkshop__factory {
+export class IWhizartArtist__factory {
   static readonly abi = _abi;
-  static createInterface(): IWhizartWorkshopInterface {
-    return new utils.Interface(_abi) as IWhizartWorkshopInterface;
+  static createInterface(): IWhizartArtistInterface {
+    return new utils.Interface(_abi) as IWhizartArtistInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IWhizartWorkshop {
-    return new Contract(address, _abi, signerOrProvider) as IWhizartWorkshop;
+  ): IWhizartArtist {
+    return new Contract(address, _abi, signerOrProvider) as IWhizartArtist;
   }
 }

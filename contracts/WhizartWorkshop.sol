@@ -81,8 +81,8 @@ contract WhizartWorkshop is
 	mapping(address => CreateWorkshopRequest[]) public mintRequests;
 
 	uint256 private mintAmount;
+	uint256 private mintPrice;
 	bool public mintActive;
-	uint256 public mintPrice;
 	uint256 public supplyAvailable;
 	address public box;
 
@@ -180,6 +180,10 @@ contract WhizartWorkshop is
 
 	function getDropRate() external view returns (uint256[] memory) {
 		return dropRate;
+	}
+
+	function getMintPrice() external view override returns (uint256) {
+		return mintPrice;
 	}
 
 	/// @notice This function will returns an Workshop array from a specific address
