@@ -61,7 +61,7 @@ const config: HardhatUserConfig = {
       gas: 2100000,
     },
     bsctestnet: {
-      url: process.env.BSC_TESTNET_URL,
+      url: process.env.BSC_TESTNET_URL ?? "",
       chainId: 97,
       gasPrice: 80000000000,
       accounts: accounts("bsctestnet"),
