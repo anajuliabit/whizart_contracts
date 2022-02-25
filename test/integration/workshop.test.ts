@@ -26,7 +26,7 @@ describe("WArtist Integration Tests", function () {
     user = await ethers.getSigner(beneficiary);
 
     const proxy = (await import(
-      `../../.openzeppelin/unknown-80001.json`
+      `../../.openzeppelin/unknown-97.json`
     )) as Proxy;
 
     const implKeys = Object.keys(proxy.impls);

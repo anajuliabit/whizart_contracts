@@ -80,7 +80,6 @@ contract WhizartArtist is
 	uint256[] private dropRate;
 
 	string public baseURI;
-	string public constant baseExtension = ".json";
 
 	/// @notice Mapping from owner address to token ID's
 	mapping(address => uint256[]) public tokenIds;
@@ -143,7 +142,7 @@ contract WhizartArtist is
 		address to = _msgSender();
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
+			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
 		}
 		requestToken(to, ALL_RARITY);
 	}
@@ -157,7 +156,7 @@ contract WhizartArtist is
 
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
+			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
 		}
 
 		requestToken(to, rarity);
@@ -182,7 +181,7 @@ contract WhizartArtist is
 	function tokenURI(uint256 tokenId) public view override returns (string memory) {
 		require(_exists(tokenId), "Artist doesn't exist");
 		string memory id = StringsUpgradeable.toString(tokenId);
-		return string(abi.encodePacked(_baseURI(), id, baseExtension));
+		return string(abi.encodePacked(_baseURI(), id));
 	}
 
 	/// @notice Will return current token supply
@@ -362,9 +361,18 @@ contract WhizartArtist is
 	}
 
 	function processMintRequest() external {
+		address to = _msgSender();
 		CreateArtistRequest[] storage requests = mintRequests[_msgSender()];
+		uint256 size = tokenIds[to].length;
+		require(size < mintAmount, "User limit reached");
+
+		uint256 available = mintAmount - size;
 
 		for (uint256 i = requests.length; i > 0; --i) {
+			if (available == 0) {
+				requests.pop();
+				break;
+			}
 			uint256 targetBlock = requests[i - 1].targetBlock;
 			require(block.number > targetBlock, "Target block not arrived");
 

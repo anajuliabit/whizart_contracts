@@ -13,12 +13,10 @@ describe("WhizartBox", function () {
   let contract: WhizartBox;
   let workshopContract: WhizartWorkshop;
   let artistContract: WhizartArtist;
-  let deployer: SignerWithAddress,
-    user: SignerWithAddress,
-    user2: SignerWithAddress,
-    treasury: SignerWithAddress;
+  let deployer: SignerWithAddress, user: SignerWithAddress;
+
   this.beforeEach(async () => {
-    [deployer, user, user2, treasury] = await ethers.getSigners();
+    [deployer, user] = await ethers.getSigners();
 
     const workshopFactory = await ethers.getContractFactory("WhizartWorkshop");
     workshopContract = (await upgrades.deployProxy(workshopFactory, {
@@ -118,10 +116,10 @@ describe("WhizartBox", function () {
     expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(MINT_PRICE);
   });
 
-  // it("Should failed mint if send worng amount of BNB", async () => {
+  // it("Should failed mint if send wrong amount of BNB", async () => {
   //   const { mintTransaction, processMintArtist, processMintWorkshop } =
   //     await mint(user);
   //   console.log(mintTransaction);
-  //   await expect(mint(user)).to.be.revertedWith("Worng amount of BNB");
+  //   await expect(mint(user)).to.be.revertedWith("wrong amount of BNB");
   // });
 });

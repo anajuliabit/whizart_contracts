@@ -415,7 +415,7 @@ describe("WhizartWorkshop", function () {
     await mint(user);
 
     const uri = await contract.tokenURI(0);
-    expect(uri).to.eq(`${baseURI}0.json`);
+    expect(uri).to.eq(`${baseURI}0`);
   });
 
   it("Should change drop rate with success", async () => {

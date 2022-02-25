@@ -36,12 +36,12 @@ library Utils {
 			totalWeight += weights[i];
 		}
 		uint256 randMod;
-		(seed, randMod) = randomRange(seed, 1, totalWeight);
+		(seed, randMod) = randomRange(seed, 0, totalWeight);
 		uint256 total;
 		for (uint256 i = 0; i < weights.length; i++) {
 			total += weights[i];
 			if (randMod <= total) {
-				return (seed, i);
+				return (seed, i + 1);
 			}
 		}
 		return (seed, 1);

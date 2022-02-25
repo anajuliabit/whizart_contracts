@@ -43,7 +43,6 @@ contract WhizartWorkshop is
 	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
 
 	uint8 public constant ALL_RARITY = 0;
-	string public constant baseExtension = ".json";
 	uint256 private constant maskLast8Bits = uint256(0xff);
 	uint256 private constant maskFirst248Bits = ~uint256(0xff);
 
@@ -130,7 +129,7 @@ contract WhizartWorkshop is
 		address to = _msgSender();
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
+			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
 		}
 
 		requestToken(to, ALL_RARITY);
@@ -145,7 +144,7 @@ contract WhizartWorkshop is
 
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User buy limit reached");
+			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
 		}
 
 		requestToken(to, rarity);
@@ -170,7 +169,7 @@ contract WhizartWorkshop is
 	function tokenURI(uint256 tokenId) public view override returns (string memory) {
 		require(_exists(tokenId), "Workshop doesn't exist");
 		string memory id = StringsUpgradeable.toString(tokenId);
-		return string(abi.encodePacked(_baseURI(), id, baseExtension));
+		return string(abi.encodePacked(_baseURI(), id));
 	}
 
 	/// @notice Will return current token supply
@@ -337,8 +336,19 @@ contract WhizartWorkshop is
 	}
 
 	function processMintRequest() external {
+		address to = _msgSender();
 		CreateWorkshopRequest[] storage requests = mintRequests[_msgSender()];
+		uint256 size = tokenIds[to].length;
+		require(size < mintAmount, "User limit reached");
+
+		uint256 available = mintAmount - size;
+
 		for (uint256 i = requests.length; i > 0; --i) {
+			if (available == 0) {
+				requests.pop();
+				break;
+			}
+
 			uint256 targetBlock = requests[i - 1].targetBlock;
 			require(block.number > targetBlock, "Target block not arrived");
 

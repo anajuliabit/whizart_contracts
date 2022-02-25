@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
 import { expect } from "chai";
-import { ContractTransaction } from "ethers";
 import { ethers, getNamedAccounts, network } from "hardhat";
 import { Proxy } from "types/proxy";
 import { WhizartArtist } from "../../types/contracts";
@@ -13,13 +12,6 @@ import { WhizartArtist } from "../../types/contracts";
 describe("WArtist Integration Tests", function () {
   let contract: WhizartArtist;
   let owner: SignerWithAddress, user: SignerWithAddress;
-
-  function addURIByRarity(
-    rarity: number,
-    uris: string[]
-  ): Promise<ContractTransaction> {
-    return contract.connect(owner).addAvailableURIs(rarity, uris);
-  }
 
   this.beforeAll(async () => {
     if (
@@ -36,7 +28,7 @@ describe("WArtist Integration Tests", function () {
     user = await ethers.getSigner(beneficiary);
 
     const proxy = (await import(
-      `../../.openzeppelin/unknown-80001.json`
+      `../../.openzeppelin/unknown-97.json`
     )) as Proxy;
 
     const implKeys = Object.keys(proxy.impls);
@@ -49,27 +41,6 @@ describe("WArtist Integration Tests", function () {
     contract = WArtistContract.attach(
       proxy.proxies[proxy.proxies.length - 1].address
     );
-
-    await addURIByRarity(0, [
-      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-    ]);
-    await addURIByRarity(1, [
-      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-    ]);
-    await addURIByRarity(2, [
-      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-    ]);
-    await addURIByRarity(3, [
-      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-    ]);
-    await addURIByRarity(4, [
-      "bafkreide3yekzsbxgakge5j7qkgwvddhigjjoxao2so64neh7v624zp4jm",
-      "bafkreie3aq3kllp347gb53izfl3nubs2rgw6qbtkqh3lsbpm7jc7f27uqq",
-    ]);
   });
 
   it("Shoud add to whitelist", async () => {

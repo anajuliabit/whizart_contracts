@@ -37,7 +37,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "addWhitelistBatch(address[])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "baseExtension()": FunctionFragment;
     "baseURI()": FunctionFragment;
     "box()": FunctionFragment;
     "disableMint()": FunctionFragment;
@@ -129,10 +128,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "baseExtension",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(functionFragment: "box", values?: undefined): string;
   encodeFunctionData(
@@ -334,10 +329,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "baseExtension",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "box", data: BytesLike): Result;
   decodeFunctionResult(
@@ -737,8 +728,6 @@ export interface WhizartWorkshop extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    baseExtension(overrides?: CallOverrides): Promise<[string]>;
-
     baseURI(overrides?: CallOverrides): Promise<[string]>;
 
     box(overrides?: CallOverrides): Promise<[string]>;
@@ -1007,8 +996,6 @@ export interface WhizartWorkshop extends BaseContract {
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  baseExtension(overrides?: CallOverrides): Promise<string>;
-
   baseURI(overrides?: CallOverrides): Promise<string>;
 
   box(overrides?: CallOverrides): Promise<string>;
@@ -1263,8 +1250,6 @@ export interface WhizartWorkshop extends BaseContract {
     ): Promise<void>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    baseExtension(overrides?: CallOverrides): Promise<string>;
 
     baseURI(overrides?: CallOverrides): Promise<string>;
 
@@ -1671,8 +1656,6 @@ export interface WhizartWorkshop extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    baseExtension(overrides?: CallOverrides): Promise<BigNumber>;
-
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     box(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1945,8 +1928,6 @@ export interface WhizartWorkshop extends BaseContract {
       owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    baseExtension(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
