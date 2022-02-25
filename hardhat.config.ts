@@ -60,6 +60,13 @@ const config: HardhatUserConfig = {
       gasPrice: 8000000000,
       gas: 2100000,
     },
+    bsctestnet: {
+      url: process.env.BSC_TESTNET_URL,
+      chainId: 97,
+      gasPrice: 80000000000,
+      accounts: accounts("bsctestnet"),
+      gas: 2100000,
+    },
   },
   solidity: {
     compilers: [
@@ -80,7 +87,7 @@ const config: HardhatUserConfig = {
     deployments: "./generated/deployments",
   },
   etherscan: {
-    apiKey: process.env.POLYGON_API_KEY,
+    apiKey: process.env.BSC_API_KEY,
   },
   typechain: {
     outDir: "types/contracts",

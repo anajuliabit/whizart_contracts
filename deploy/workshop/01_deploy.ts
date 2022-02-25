@@ -1,5 +1,5 @@
 import { ContractFactory } from "ethers";
-import { ethers, getNamedAccounts, upgrades } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { WhizartWorkshop__factory } from "types/contracts";
@@ -14,11 +14,9 @@ const func: DeployFunction = async ({
   const contractFactory: WhizartWorkshop__factory =
     await ethers.getContractFactory(contractName);
 
-  const { deployer } = await getNamedAccounts();
-
   const proxy = await upgrades.deployProxy(
     contractFactory as ContractFactory,
-    [deployer],
+    [],
     {
       kind: "uups",
     }
