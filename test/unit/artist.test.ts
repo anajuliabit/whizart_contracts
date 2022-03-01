@@ -41,7 +41,10 @@ describe("WhizartArtist", function () {
     mintTransaction: ContractTransaction;
     processTransaction: ContractTransaction;
   }> {
-    await contract.connect(deployer).addWhitelist(to.address);
+    const isWhitelisted = await contract.whitelist(to.address);
+    if (!isWhitelisted) {
+      await contract.connect(deployer).addWhitelist(to.address);
+    }
     const tx = await contract.connect(to).mint({
       value: MINT_PRICE_ARTIST,
     });
@@ -434,5 +437,13 @@ describe("WhizartArtist", function () {
   it("Should return drop rate", async () => {
     const dropRate = await contract.getDropRate();
     await expect(dropRate.length).to.be.eq(5);
+  });
+
+  it("Should revert mint if max amount by user already reached", async () => {
+    await mint(user);
+    await mint(user);
+    await expect(
+      contract.connect(user).mint({ value: MINT_PRICE_ARTIST })
+    ).to.be.revertedWith("User limit reached");
   });
 });
