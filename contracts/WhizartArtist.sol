@@ -118,7 +118,7 @@ contract WhizartArtist is
 		mintAmount = 2;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
-		dropRate = [500, 300, 100, 70, 30];
+		dropRate = [41, 26, 20, 9, 4];
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty

@@ -430,7 +430,7 @@ describe("WhizartWorkshop", function () {
 
     await expect(tx)
       .to.emit(contract, "DropRateChanged")
-      .withArgs([700, 300, 100], [500, 300, 100]);
+      .withArgs([60, 28, 12], [500, 300, 100]);
     expect(dropRate.length).to.be.eq(3);
   });
 
@@ -439,7 +439,7 @@ describe("WhizartWorkshop", function () {
     await expect(dropRate.length).to.be.eq(3);
   });
 
-  it.only("Should revert mint if max amount by user already reached", async () => {
+  it("Should revert mint if max amount by user already reached", async () => {
     await mint(user);
     await mint(user);
     await expect(

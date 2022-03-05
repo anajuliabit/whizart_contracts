@@ -47,6 +47,8 @@ export interface WhizartArtistInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "box()": FunctionFragment;
+    "c_0x532e191d(bytes32)": FunctionFragment;
+    "c_0x7446084a(bytes32)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
@@ -141,6 +143,14 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(functionFragment: "box", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "c_0x532e191d",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x7446084a",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "disableMint",
     values?: undefined
@@ -339,6 +349,14 @@ export interface WhizartArtistInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "box", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x532e191d",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x7446084a",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "disableMint",
     data: BytesLike
@@ -751,6 +769,16 @@ export interface WhizartArtist extends BaseContract {
 
     box(overrides?: CallOverrides): Promise<[string]>;
 
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -1026,6 +1054,16 @@ export interface WhizartArtist extends BaseContract {
 
   box(overrides?: CallOverrides): Promise<string>;
 
+  c_0x532e191d(
+    c__0x532e191d: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0x7446084a(
+    c__0x7446084a: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1287,6 +1325,16 @@ export interface WhizartArtist extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<string>;
 
     box(overrides?: CallOverrides): Promise<string>;
+
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     disableMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1690,6 +1738,16 @@ export interface WhizartArtist extends BaseContract {
 
     box(overrides?: CallOverrides): Promise<BigNumber>;
 
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1962,6 +2020,16 @@ export interface WhizartArtist extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     box(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    c_0x532e191d(
+      c__0x532e191d: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0x7446084a(
+      c__0x7446084a: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }

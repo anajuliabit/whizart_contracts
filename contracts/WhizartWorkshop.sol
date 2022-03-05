@@ -107,7 +107,7 @@ contract WhizartWorkshop is
 		// keyHash = _keyHash;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
-		dropRate = [700, 300, 100];
+		dropRate = [60, 28, 12];
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty

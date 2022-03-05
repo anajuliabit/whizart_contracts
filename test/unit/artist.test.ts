@@ -430,7 +430,7 @@ describe("WhizartArtist", function () {
     const dropRate = await contract.getDropRate();
     await expect(tx)
       .to.emit(contract, "DropRateChanged")
-      .withArgs([500, 300, 100, 70, 30], [400, 400, 100, 70, 30]);
+      .withArgs([41, 26, 20, 9, 4], [400, 400, 100, 70, 30]);
     expect(dropRate.length).to.be.eq(5);
   });
 
