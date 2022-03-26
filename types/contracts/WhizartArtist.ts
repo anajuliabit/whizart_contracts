@@ -47,8 +47,6 @@ export interface WhizartArtistInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "box()": FunctionFragment;
-    "c_0x532e191d(bytes32)": FunctionFragment;
-    "c_0x7446084a(bytes32)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
@@ -86,7 +84,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     "setSupplyAvailable(uint256)": FunctionFragment;
     "supplyAvailable()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "sweepEthToAddress(address,uint256)": FunctionFragment;
+    "sweepBnbToAddress(address,uint256)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenIds(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
@@ -143,14 +141,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(functionFragment: "box", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "c_0x532e191d",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x7446084a",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "disableMint",
     values?: undefined
@@ -282,7 +272,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "sweepEthToAddress",
+    functionFragment: "sweepBnbToAddress",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
@@ -349,14 +339,6 @@ export interface WhizartArtistInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "box", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x532e191d",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x7446084a",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "disableMint",
     data: BytesLike
@@ -464,7 +446,7 @@ export interface WhizartArtistInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sweepEthToAddress",
+    functionFragment: "sweepBnbToAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
@@ -565,7 +547,7 @@ export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
 
 export type BaseURIChangedEvent = TypedEvent<
   [string, string],
-  { _old: string; _new: string }
+  { old: string; _new: string }
 >;
 
 export type BaseURIChangedEventFilter = TypedEventFilter<BaseURIChangedEvent>;
@@ -576,21 +558,21 @@ export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export type DropRateChangedEvent = TypedEvent<
   [BigNumber[], BigNumber[]],
-  { _old: BigNumber[]; _new: BigNumber[] }
+  { old: BigNumber[]; _new: BigNumber[] }
 >;
 
 export type DropRateChangedEventFilter = TypedEventFilter<DropRateChangedEvent>;
 
 export type MintActiveEvent = TypedEvent<
   [boolean, boolean],
-  { _old: boolean; _new: boolean }
+  { old: boolean; _new: boolean }
 >;
 
 export type MintActiveEventFilter = TypedEventFilter<MintActiveEvent>;
 
 export type MintAmountChangedEvent = TypedEvent<
   [BigNumber, BigNumber],
-  { _old: BigNumber; _new: BigNumber }
+  { old: BigNumber; _new: BigNumber }
 >;
 
 export type MintAmountChangedEventFilter =
@@ -598,7 +580,7 @@ export type MintAmountChangedEventFilter =
 
 export type MintRequestedEvent = TypedEvent<
   [string, BigNumber],
-  { _to: string; _targetBlock: BigNumber }
+  { to: string; targetBlock: BigNumber }
 >;
 
 export type MintRequestedEventFilter = TypedEventFilter<MintRequestedEvent>;
@@ -616,7 +598,7 @@ export type PaymentReceivedEventFilter = TypedEventFilter<PaymentReceivedEvent>;
 
 export type PriceChangedEvent = TypedEvent<
   [BigNumber, BigNumber],
-  { _old: BigNumber; _new: BigNumber }
+  { old: BigNumber; _new: BigNumber }
 >;
 
 export type PriceChangedEventFilter = TypedEventFilter<PriceChangedEvent>;
@@ -645,7 +627,7 @@ export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
 
 export type SupplyAvailableChangedEvent = TypedEvent<
   [BigNumber, BigNumber],
-  { _old: BigNumber; _new: BigNumber }
+  { old: BigNumber; _new: BigNumber }
 >;
 
 export type SupplyAvailableChangedEventFilter =
@@ -768,16 +750,6 @@ export interface WhizartArtist extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<[string]>;
 
     box(overrides?: CallOverrides): Promise<[string]>;
-
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -954,7 +926,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1053,16 +1025,6 @@ export interface WhizartArtist extends BaseContract {
   baseURI(overrides?: CallOverrides): Promise<string>;
 
   box(overrides?: CallOverrides): Promise<string>;
-
-  c_0x532e191d(
-    c__0x532e191d: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x7446084a(
-    c__0x7446084a: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
 
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1232,7 +1194,7 @@ export interface WhizartArtist extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  sweepEthToAddress(
+  sweepBnbToAddress(
     _user: string,
     _amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1325,16 +1287,6 @@ export interface WhizartArtist extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<string>;
 
     box(overrides?: CallOverrides): Promise<string>;
-
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     disableMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1481,7 +1433,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: CallOverrides
@@ -1563,10 +1515,10 @@ export interface WhizartArtist extends BaseContract {
     ): ApprovalForAllEventFilter;
 
     "BaseURIChanged(string,string)"(
-      _old?: null,
+      old?: null,
       _new?: null
     ): BaseURIChangedEventFilter;
-    BaseURIChanged(_old?: null, _new?: null): BaseURIChangedEventFilter;
+    BaseURIChanged(old?: null, _new?: null): BaseURIChangedEventFilter;
 
     "BeaconUpgraded(address)"(
       beacon?: string | null
@@ -1574,25 +1526,25 @@ export interface WhizartArtist extends BaseContract {
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
 
     "DropRateChanged(uint256[],uint256[])"(
-      _old?: null,
+      old?: null,
       _new?: null
     ): DropRateChangedEventFilter;
-    DropRateChanged(_old?: null, _new?: null): DropRateChangedEventFilter;
+    DropRateChanged(old?: null, _new?: null): DropRateChangedEventFilter;
 
-    "MintActive(bool,bool)"(_old?: null, _new?: null): MintActiveEventFilter;
-    MintActive(_old?: null, _new?: null): MintActiveEventFilter;
+    "MintActive(bool,bool)"(old?: null, _new?: null): MintActiveEventFilter;
+    MintActive(old?: null, _new?: null): MintActiveEventFilter;
 
     "MintAmountChanged(uint256,uint256)"(
-      _old?: null,
+      old?: null,
       _new?: null
     ): MintAmountChangedEventFilter;
-    MintAmountChanged(_old?: null, _new?: null): MintAmountChangedEventFilter;
+    MintAmountChanged(old?: null, _new?: null): MintAmountChangedEventFilter;
 
     "MintRequested(address,uint256)"(
-      _to?: null,
-      _targetBlock?: null
+      to?: null,
+      targetBlock?: null
     ): MintRequestedEventFilter;
-    MintRequested(_to?: null, _targetBlock?: null): MintRequestedEventFilter;
+    MintRequested(to?: null, targetBlock?: null): MintRequestedEventFilter;
 
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
@@ -1604,10 +1556,10 @@ export interface WhizartArtist extends BaseContract {
     PaymentReceived(sender?: null, amount?: null): PaymentReceivedEventFilter;
 
     "PriceChanged(uint256,uint256)"(
-      _old?: null,
+      old?: null,
       _new?: null
     ): PriceChangedEventFilter;
-    PriceChanged(_old?: null, _new?: null): PriceChangedEventFilter;
+    PriceChanged(old?: null, _new?: null): PriceChangedEventFilter;
 
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,
@@ -1643,11 +1595,11 @@ export interface WhizartArtist extends BaseContract {
     ): RoleRevokedEventFilter;
 
     "SupplyAvailableChanged(uint256,uint256)"(
-      _old?: null,
+      old?: null,
       _new?: null
     ): SupplyAvailableChangedEventFilter;
     SupplyAvailableChanged(
-      _old?: null,
+      old?: null,
       _new?: null
     ): SupplyAvailableChangedEventFilter;
 
@@ -1737,16 +1689,6 @@ export interface WhizartArtist extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     box(overrides?: CallOverrides): Promise<BigNumber>;
-
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1922,7 +1864,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2020,16 +1962,6 @@ export interface WhizartArtist extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     box(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    c_0x532e191d(
-      c__0x532e191d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2205,7 +2137,7 @@ export interface WhizartArtist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }

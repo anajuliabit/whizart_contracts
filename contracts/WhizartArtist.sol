@@ -10,7 +10,7 @@ https://whizart.co/
 */
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
@@ -19,7 +19,6 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
 import "./utils/Utils.sol";
 import "./utils/IWhizartArtist.sol";
@@ -34,32 +33,10 @@ contract WhizartArtist is
 	Whitelist,
 	IWhizartArtist
 {
-	using CountersUpgradeable for CountersUpgradeable.Counter;
-	CountersUpgradeable.Counter public idCounter;
-
-	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
-	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
-	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
-	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
-
-	uint8 public constant ALL_RARITY = 0;
-	uint256 private constant maskLast8Bits = uint256(0xff);
-	uint256 private constant maskFirst248Bits = ~uint256(0xff);
-
-	event MintRequested(address _to, uint256 _targetBlock);
-	event PaymentReceived(address sender, uint256 amount);
-	event BaseURIChanged(string _old, string _new);
-	event MintActive(bool _old, bool _new);
-	event MintAmountChanged(uint256 _old, uint256 _new);
-	event SupplyAvailableChanged(uint256 _old, uint256 _new);
-	event Withdraw(address to, uint256 amount);
-	event DropRateChanged(uint256[] _old, uint256[] _new);
-	event TokenMinted(address indexed to, uint256 indexed tokenId);
-	event PriceChanged(uint256 _old, uint256 _new);
-
 	enum PaintType {
+		ROLL,
+		PENCIL,
 		GRAPHITTI,
-		ACRILIC,
 		INK,
 		FRESCO,
 		WATER_COLOR
@@ -77,6 +54,27 @@ contract WhizartArtist is
 		uint8 rarity;
 	}
 
+	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
+	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
+	bytes32 public constant STAFF_ROLE = keccak256("STAFF_ROLE");
+	bytes32 public constant DESIGNER_ROLE = keccak256("DESIGNER_ROLE");
+
+	uint8 public constant ALL_RARITY = 0;
+	uint256 private constant maskLast8Bits = uint256(0xff);
+	uint256 private constant maskFirst248Bits = ~uint256(0xff);
+
+	event MintRequested(address to, uint256 targetBlock);
+	event PaymentReceived(address sender, uint256 amount);
+	event BaseURIChanged(string old, string _new);
+	event MintActive(bool old, bool _new);
+	event MintAmountChanged(uint256 old, uint256 _new);
+	event SupplyAvailableChanged(uint256 old, uint256 _new);
+	event Withdraw(address to, uint256 amount);
+	event DropRateChanged(uint256[] old, uint256[] _new);
+	event TokenMinted(address indexed to, uint256 indexed tokenId);
+	event PriceChanged(uint256 old, uint256 _new);
+
+	uint256 private tokenId;
 	uint256[] private dropRate;
 
 	string public baseURI;
@@ -95,7 +93,6 @@ contract WhizartArtist is
 	bool public mintActive;
 	uint256 private mintPrice;
 	uint256 public supplyAvailable;
-	address public box;
 
 	function initialize() public initializer {
 		__ERC721_init("WhizArt Artist", "WART");
@@ -110,15 +107,17 @@ contract WhizartArtist is
 		_setupRole(STAFF_ROLE, _msgSender());
 		_setupRole(DESIGNER_ROLE, _msgSender());
 
-		baseURI = "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/artists/";
+		// @TODO change metadata uri
+		baseURI = "https://whizart.co/api/artists";
 		whitelistActive = true;
 		// @TODO change to false when go to production
 		mintActive = true;
-		supplyAvailable = 1000;
+		supplyAvailable = 2300;
 		mintAmount = 2;
 		// @TODO change native token price when go to production
-		mintPrice = 0.0001 * 10**18;
-		dropRate = [41, 26, 20, 9, 4];
+		mintPrice = 0.125 * 10**18;
+		// pre-sale 1
+		dropRate = [0, 50, 39, 9, 2];
 	}
 
 	/// @dev Function to receive ether, msg.data must be empty
@@ -132,61 +131,45 @@ contract WhizartArtist is
 	}
 
 	/// @notice Mints a new random Artist
-	/// This function call chainlink VRF to generate a random Artist
-	/// Artist will only appear in your wallet after VRF callback transaction is confirmed, so please wait a minutes to check
 	function mint() external payable override whenNotPaused nonReentrant {
 		require(mintActive == true, "Mint is not available");
-		require(idCounter.current() + 1 < supplyAvailable, "No Artist available to mint");
+		require(tokenId + 1 < supplyAvailable, "No Artist available to mint");
 		require(msg.value == mintPrice, "Wrong amount of BNB");
 
 		address to = _msgSender();
+		require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
+
 		if (whitelistActive) {
 			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
 		}
 		requestToken(to, ALL_RARITY);
-	}
-
-	/// @notice Mints a new random Workshop
-	function mintBox(address to, uint8 rarity) external payable override whenNotPaused nonReentrant {
-		require(_msgSender() == box, "Only Box contract can mint box");
-		require(mintActive == true, "Mint is not available");
-		require(msg.value == mintPrice, "Wrong amount of BNB");
-		require(supplyAvailable > 0, "No Workshop available to mint");
-
-		if (whitelistActive) {
-			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
-		}
-
-		requestToken(to, rarity);
 	}
 
 	/// @notice Function to transfer a token from one owner to another
 	/// @param from address The address which the token is transferred from
 	/// @param to address The address which the token is transferred to
-	/// @param tokenId uint256 The token ID
+	/// @param _tokenId uint256 The token ID
 	/// @dev transfer temporarily disabled
 	function _transfer(
 		address from,
 		address to,
-		uint256 tokenId
+		uint256 _tokenId
 	) internal override whenNotPaused nonReentrant {
 		require(false, "Temporarily disabled");
-		ERC721Upgradeable._transfer(from, to, tokenId);
+		ERC721Upgradeable._transfer(from, to, _tokenId);
 	}
 
 	/// @notice Will return the token URI
-	/// @param tokenId uint256 Token ID
-	function tokenURI(uint256 tokenId) public view override returns (string memory) {
-		require(_exists(tokenId), "Artist doesn't exist");
-		string memory id = StringsUpgradeable.toString(tokenId);
+	/// @param _tokenId uint256 Token ID
+	function tokenURI(uint256 _tokenId) public view override returns (string memory) {
+		require(_exists(_tokenId), "Artist doesn't exist");
+		string memory id = StringsUpgradeable.toString(_tokenId);
 		return string(abi.encodePacked(_baseURI(), id));
 	}
 
 	/// @notice Will return current token supply
 	function totalSupply() external view returns (uint256) {
-		return idCounter.current();
+		return tokenId;
 	}
 
 	/// @notice This function will returns an Artist array from a specific address
@@ -200,6 +183,14 @@ contract WhizartArtist is
 		return result;
 	}
 
+	function getDropRate() external view returns (uint256[] memory) {
+		return dropRate;
+	}
+
+	function getMintPrice() external view override returns (uint256) {
+		return mintPrice;
+	}
+
 	/*
 	This section has all functions available only for DESIGNER_ROLE
 	*/
@@ -210,11 +201,35 @@ contract WhizartArtist is
 		emit DropRateChanged(old, value);
 	}
 
+	function setMintPrice(uint256 value) external onlyRole(DESIGNER_ROLE) {
+		uint256 old = mintPrice;
+		mintPrice = value;
+		emit PriceChanged(old, mintPrice);
+	}
+
+	function setMintAmount(uint256 _mintAmount) external onlyRole(DESIGNER_ROLE) {
+		uint256 old = mintAmount;
+		mintAmount = _mintAmount;
+		emit MintAmountChanged(old, mintAmount);
+	}
+
+	function setSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DESIGNER_ROLE) {
+		uint256 old = supplyAvailable;
+		supplyAvailable = _supplyAvailable;
+		emit SupplyAvailableChanged(old, supplyAvailable);
+	}
+
+	function setBaseURI(string memory _newBaseURI) external onlyRole(DESIGNER_ROLE) {
+		string memory old = baseURI;
+		baseURI = _newBaseURI;
+		emit BaseURIChanged(old, baseURI);
+	}
+
 	/*
 	This section has all functions available only for STAFF_ROLE
 */
 
-	/// @notice This will enable whitelist or "if" in mint()
+	/// @notice This will enable whitelist in mint()
 	function enableWhitelist() external onlyRole(STAFF_ROLE) {
 		_enableWhitelist();
 	}
@@ -274,53 +289,17 @@ contract WhizartArtist is
 	This section has all functions available only for DEFAULT_ADMIN_ROLE
 */
 
-	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		uint256 old = mintPrice;
-		mintPrice = value;
-		emit PriceChanged(old, mintPrice);
-	}
-
-	function setMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		uint256 old = mintAmount;
-		mintAmount = _mintAmount;
-		emit MintAmountChanged(old, mintAmount);
-	}
-
-	function setSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		uint256 old = supplyAvailable;
-		supplyAvailable = _supplyAvailable;
-		emit SupplyAvailableChanged(old, supplyAvailable);
-	}
-
-	function setBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		string memory old = baseURI;
-		baseURI = _newBaseURI;
-		emit BaseURIChanged(old, baseURI);
-	}
-
-	function setBoxyContract(address _contract) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		box = _contract;
-	}
-
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		require(address(this).balance >= _amount, "Invalid amount");
 		payable(_to).transfer(_amount);
 		emit Withdraw(_to, _amount);
 	}
 
-	function getDropRate() external view returns (uint256[] memory) {
-		return dropRate;
-	}
-
-	function getMintPrice() external view override returns (uint256) {
-		return mintPrice;
-	}
-
-	/// @notice function useful for accidental ETH transfers to contract (to user address)
+	/// @notice function useful for accidental BNB transfers to contract (to user address)
 	/// wraps _user in payable to fix address -> address payable
 	/// @param _user - user address to input
-	/// @param _amount - amount of ETH to transfer
-	function sweepEthToAddress(address _user, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	/// @param _amount - amount of BNB to transfer
+	function sweepBnbToAddress(address _user, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		payable(_user).transfer(_amount);
 	}
 
@@ -393,17 +372,16 @@ contract WhizartArtist is
 	}
 
 	function createToken(uint256 seed, uint8 rarity) internal {
-		uint256 id = idCounter.current();
-		idCounter.increment();
+		uint256 id = tokenId;
+		++tokenId;
 		--supplyAvailable;
 
-		uint256 randomRarity;
 		if (rarity == ALL_RARITY) {
+			uint256 randomRarity;
 			(seed, randomRarity) = Utils.weightedRandom(seed, dropRate);
 			rarity = uint8(randomRarity);
 		}
 
-		// @TODO test
 		(, uint256 randomPaintType) = Utils.randomRange(seed, 0, 4);
 
 		Artist memory artist = Artist(uint8(rarity), PaintType(randomPaintType), 1, 2);
@@ -420,9 +398,9 @@ contract WhizartArtist is
 	function _beforeTokenTransfer(
 		address from,
 		address to,
-		uint256 tokenId
+		uint256 _tokenId
 	) internal override whenNotPaused {
-		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
+		ERC721Upgradeable._beforeTokenTransfer(from, to, _tokenId);
 	}
 
 	function _baseURI() internal view override returns (string memory) {

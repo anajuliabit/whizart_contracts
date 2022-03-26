@@ -13,4 +13,3 @@
 - [ ] Paints contract
 - [ ] Add royalty to Artist
 - [ ] Add royalty to Workshop
-- [ ] Box contract

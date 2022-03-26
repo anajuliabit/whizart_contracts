@@ -39,8 +39,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
     "box()": FunctionFragment;
-    "c_0x4ca772aa(bytes32)": FunctionFragment;
-    "c_0x7446084a(bytes32)": FunctionFragment;
     "disableMint()": FunctionFragment;
     "disableWhitelist()": FunctionFragment;
     "enableMint()": FunctionFragment;
@@ -78,7 +76,7 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     "setSupplyAvailable(uint256)": FunctionFragment;
     "supplyAvailable()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "sweepEthToAddress(address,uint256)": FunctionFragment;
+    "sweepBnbToAddress(address,uint256)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenIds(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
@@ -132,14 +130,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(functionFragment: "box", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "c_0x4ca772aa",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x7446084a",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "disableMint",
     values?: undefined
@@ -271,7 +261,7 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "sweepEthToAddress",
+    functionFragment: "sweepBnbToAddress",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
@@ -341,14 +331,6 @@ export interface WhizartWorkshopInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "box", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x4ca772aa",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x7446084a",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "disableMint",
     data: BytesLike
@@ -456,7 +438,7 @@ export interface WhizartWorkshopInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sweepEthToAddress",
+    functionFragment: "sweepBnbToAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
@@ -750,16 +732,6 @@ export interface WhizartWorkshop extends BaseContract {
 
     box(overrides?: CallOverrides): Promise<[string]>;
 
-    c_0x4ca772aa(
-      c__0x4ca772aa: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -935,7 +907,7 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1027,16 +999,6 @@ export interface WhizartWorkshop extends BaseContract {
   baseURI(overrides?: CallOverrides): Promise<string>;
 
   box(overrides?: CallOverrides): Promise<string>;
-
-  c_0x4ca772aa(
-    c__0x4ca772aa: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x7446084a(
-    c__0x7446084a: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
 
   disableMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1206,7 +1168,7 @@ export interface WhizartWorkshop extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  sweepEthToAddress(
+  sweepBnbToAddress(
     _user: string,
     _amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1292,16 +1254,6 @@ export interface WhizartWorkshop extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<string>;
 
     box(overrides?: CallOverrides): Promise<string>;
-
-    c_0x4ca772aa(
-      c__0x4ca772aa: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     disableMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1448,7 +1400,7 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: CallOverrides
@@ -1708,16 +1660,6 @@ export interface WhizartWorkshop extends BaseContract {
 
     box(overrides?: CallOverrides): Promise<BigNumber>;
 
-    c_0x4ca772aa(
-      c__0x4ca772aa: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1892,7 +1834,7 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1990,16 +1932,6 @@ export interface WhizartWorkshop extends BaseContract {
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     box(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    c_0x4ca772aa(
-      c__0x4ca772aa: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x7446084a(
-      c__0x7446084a: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     disableMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2175,7 +2107,7 @@ export interface WhizartWorkshop extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    sweepEthToAddress(
+    sweepBnbToAddress(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }

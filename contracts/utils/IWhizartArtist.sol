@@ -15,7 +15,5 @@ pragma solidity ^0.8.2;
 interface IWhizartArtist {
 	function mint() external payable;
 
-	function mintBox(address to, uint8 rarity) external payable;
-
 	function getMintPrice() external returns (uint256);
 }

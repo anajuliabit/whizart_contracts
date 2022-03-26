@@ -10,7 +10,7 @@ https://whizart.co/
 */
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
@@ -19,7 +19,6 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./utils/Whitelist.sol";
 import "./utils/IWhizartWorkshop.sol";
 import "./utils/Utils.sol";
@@ -34,8 +33,7 @@ contract WhizartWorkshop is
 	Whitelist,
 	IWhizartWorkshop
 {
-	using CountersUpgradeable for CountersUpgradeable.Counter;
-	CountersUpgradeable.Counter public idCounter;
+	uint256 public tokenId;
 
 	bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
 	bytes32 public constant DEVELOPER_ROLE = keccak256("DEVELOPER_ROLE");
@@ -83,7 +81,6 @@ contract WhizartWorkshop is
 	uint256 private mintPrice;
 	bool public mintActive;
 	uint256 public supplyAvailable;
-	address public box;
 
 	function initialize() public initializer {
 		__ERC721_init("WhizArt Workshop", "WSHOP");
@@ -104,7 +101,6 @@ contract WhizartWorkshop is
 		mintActive = true;
 		supplyAvailable = 10;
 		mintAmount = 2;
-		// keyHash = _keyHash;
 		// @TODO change native token price when go to production
 		mintPrice = 0.0001 * 10**18;
 		dropRate = [60, 28, 12];
@@ -135,21 +131,6 @@ contract WhizartWorkshop is
 		requestToken(to, ALL_RARITY);
 	}
 
-	/// @notice Mints a new random Workshop
-	function mintBox(address to, uint8 rarity) external payable override whenNotPaused nonReentrant {
-		require(_msgSender() == box, "Only Box contract can mint box");
-		require(mintActive == true, "Mint is not available");
-		require(msg.value == mintPrice, "Wrong amount of BNB");
-		require(supplyAvailable > 0, "No Workshop available to mint");
-
-		if (whitelistActive) {
-			require(whitelist[to] == true, "Not whitelisted");
-			require(tokenIds[to].length + 1 <= mintAmount, "User limit reached");
-		}
-
-		requestToken(to, rarity);
-	}
-
 	/// @notice Function to transfer a token from one owner to another
 	/// @param from address The address which the token is transferred from
 	/// @param to address The address which the token is transferred to
@@ -172,9 +153,8 @@ contract WhizartWorkshop is
 		return string(abi.encodePacked(_baseURI(), id));
 	}
 
-	/// @notice Will return current token supply
 	function totalSupply() external view returns (uint256) {
-		return idCounter.current();
+		return tokenId;
 	}
 
 	function getDropRate() external view returns (uint256[] memory) {
@@ -183,6 +163,10 @@ contract WhizartWorkshop is
 
 	function getMintPrice() external view override returns (uint256) {
 		return mintPrice;
+	}
+
+	function _baseURI() internal view override returns (string memory) {
+		return baseURI;
 	}
 
 	/// @notice This function will returns an Workshop array from a specific address
@@ -266,37 +250,33 @@ contract WhizartWorkshop is
 		emit DropRateChanged(old, value);
 	}
 
-	/*
-	This section has all functions available only for DEFAULT_ADMIN_ROLE
-	*/
-
-	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setMintPrice(uint256 value) external onlyRole(DESIGNER_ROLE) {
 		uint256 old = mintPrice;
 		mintPrice = value;
 		emit PriceChanged(old, mintPrice);
 	}
 
-	function setMintAmount(uint256 _mintAmount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setMintAmount(uint256 _mintAmount) external onlyRole(DESIGNER_ROLE) {
 		uint256 old = mintAmount;
 		mintAmount = _mintAmount;
 		emit MintAmountChanged(old, mintAmount);
 	}
 
-	function setSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setSupplyAvailable(uint256 _supplyAvailable) external onlyRole(DESIGNER_ROLE) {
 		uint256 old = supplyAvailable;
 		supplyAvailable = _supplyAvailable;
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-	function setBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	function setBaseURI(string memory _newBaseURI) external onlyRole(DESIGNER_ROLE) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
 	}
 
-	function setBoxyContract(address _contract) external onlyRole(DEFAULT_ADMIN_ROLE) {
-		box = _contract;
-	}
+	/*
+	This section has all functions available only for DEFAULT_ADMIN_ROLE
+	*/
 
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		require(address(this).balance >= _amount, "Invalid amount");
@@ -304,11 +284,11 @@ contract WhizartWorkshop is
 		emit Withdraw(_to, _amount);
 	}
 
-	/// @notice function useful for accidental ETH transfers to contract (to user address)
+	/// @notice function useful for accidental BNB transfers to contract (to user address)
 	/// wraps _user in payable to fix address -> address payable
 	/// @param _user - user address to input
-	/// @param _amount - amount of ETH to transfer
-	function sweepEthToAddress(address _user, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+	/// @param _amount - amount of BNB to transfer
+	function sweepBnbToAddress(address _user, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		payable(_user).transfer(_amount);
 	}
 
@@ -369,8 +349,8 @@ contract WhizartWorkshop is
 	}
 
 	function createToken(uint256 seed, uint8 rarity) internal {
-		uint256 id = idCounter.current();
-		idCounter.increment();
+		uint256 id = tokenId;
+		++tokenId;
 		--supplyAvailable;
 
 		if (rarity == ALL_RARITY) {
@@ -408,10 +388,6 @@ contract WhizartWorkshop is
 		uint256 tokenId
 	) internal override whenNotPaused {
 		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
-	}
-
-	function _baseURI() internal view override returns (string memory) {
-		return baseURI;
 	}
 
 	function _authorizeUpgrade(address) internal override onlyRole(DEVELOPER_ROLE) {}

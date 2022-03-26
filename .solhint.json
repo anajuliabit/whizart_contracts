@@ -9,7 +9,7 @@
     "two-lines-top-level-separator": false,
     "bracket-align": false,
     "event-name-camelcase": true,
-    "compiler-version": ["error", "^0.8.2"],
+    "compiler-version": ["error", "^0.8.0"],
     "no-empty-blocks": false,
     "indent": false,
     "no-mix-tabs-and-spaces": false,

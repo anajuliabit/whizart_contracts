@@ -54,7 +54,7 @@ describe("WArtist Integration Tests", function () {
     expect(isWhitelisted).eq(true);
   });
 
-  it.only("Should successfully mint a Artist", async () => {
+  it("Should successfully mint a Artist", async () => {
     this.timeout(0);
     const transaction = await contract
       .connect(user)

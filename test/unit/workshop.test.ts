@@ -200,7 +200,7 @@ describe("WhizartWorkshop", function () {
     ).to.be.revertedWith("Wrong amount of BNB");
   });
 
-  it("Should sweepEthToAddress with success", async () => {
+  it("Should sweepBnbToAddress with success", async () => {
     const value = ethers.utils.parseUnits("1");
     const tx = await user.sendTransaction({
       to: contract.address,
@@ -210,14 +210,14 @@ describe("WhizartWorkshop", function () {
 
     const balanceBefore = await ethers.provider.getBalance(contract.address);
 
-    const refund = await contract.sweepEthToAddress(user.address, value);
+    const refund = await contract.sweepBnbToAddress(user.address, value);
     await refund.wait();
 
     const balanceAfter = await ethers.provider.getBalance(contract.address);
     expect(balanceBefore.sub(balanceAfter)).to.be.eq(value);
   });
 
-  it("Should revert if sweepEthToAddress caller has not DEFAULT_ADMIN_ROLE", async () => {
+  it("Should revert if sweepBnbToAddress caller has not DEFAULT_ADMIN_ROLE", async () => {
     const value = ethers.utils.parseUnits("1");
     const tx = await user.sendTransaction({
       to: contract.address,
@@ -226,7 +226,7 @@ describe("WhizartWorkshop", function () {
     await tx.wait();
 
     await expect(
-      contract.connect(user2).sweepEthToAddress(user.address, value)
+      contract.connect(user2).sweepBnbToAddress(user.address, value)
     ).to.be.revertedWith(
       `AccessControl: account ${user2.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
     );
