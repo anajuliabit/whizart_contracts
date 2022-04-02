@@ -250,12 +250,6 @@ contract WhizartWorkshop is
 		emit DropRateChanged(old, value);
 	}
 
-	function setMintPrice(uint256 value) external onlyRole(DESIGNER_ROLE) {
-		uint256 old = mintPrice;
-		mintPrice = value;
-		emit PriceChanged(old, mintPrice);
-	}
-
 	function setMintAmount(uint256 _mintAmount) external onlyRole(DESIGNER_ROLE) {
 		uint256 old = mintAmount;
 		mintAmount = _mintAmount;
@@ -268,15 +262,21 @@ contract WhizartWorkshop is
 		emit SupplyAvailableChanged(old, supplyAvailable);
 	}
 
-	function setBaseURI(string memory _newBaseURI) external onlyRole(DESIGNER_ROLE) {
+	/*
+	This section has all functions available only for DEFAULT_ADMIN_ROLE
+	*/
+
+	function setBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		string memory old = baseURI;
 		baseURI = _newBaseURI;
 		emit BaseURIChanged(old, baseURI);
 	}
 
-	/*
-	This section has all functions available only for DEFAULT_ADMIN_ROLE
-	*/
+	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		uint256 old = mintPrice;
+		mintPrice = value;
+		emit PriceChanged(old, mintPrice);
+	}
 
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		require(address(this).balance >= _amount, "Invalid amount");

@@ -5,6 +5,7 @@ import { ContractTransaction } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import {
   DEFAULT_ADMIN_ROLE,
+  DESIGNER_ROLE,
   MAINTENANCE_ROLE,
   MINT_PRICE_ARTIST,
   STAFF_ROLE,
@@ -13,8 +14,7 @@ import { WhizartArtist } from "types/contracts";
 
 use(solidity);
 
-const baseURI =
-  "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/artists/";
+const baseURI = "https://whizart.co/api/artists";
 
 describe("WhizartArtist", function () {
   let contract: WhizartArtist;
@@ -322,7 +322,7 @@ describe("WhizartArtist", function () {
       .withArgs(user.address, 0);
     expect(await contract.balanceOf(user.address)).to.eq(1);
     expect(await contract.totalSupply()).to.eq(1);
-    expect(await contract.supplyAvailable()).to.eq(999);
+    expect(await contract.supplyAvailable()).to.eq(2299);
     expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE_ARTIST);
     expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(
       MINT_PRICE_ARTIST
@@ -348,7 +348,7 @@ describe("WhizartArtist", function () {
       .withArgs(user.address, 0);
     expect(await contract.balanceOf(user.address)).to.eq(1);
     expect(await contract.totalSupply()).to.eq(1);
-    expect(await contract.supplyAvailable()).to.eq(999);
+    expect(await contract.supplyAvailable()).to.eq(2299);
     expect(balanceAfter.sub(balanceBefore)).to.be.at.least(MINT_PRICE_ARTIST);
     expect(balanceBeforeUser.sub(balanceAfterUser)).to.be.at.least(
       MINT_PRICE_ARTIST
@@ -362,10 +362,7 @@ describe("WhizartArtist", function () {
 
     await expect(tx)
       .to.emit(contract, "BaseURIChanged")
-      .withArgs(
-        "https://metadata-whizart.s3.sa-east-1.amazonaws.com/metadata/artists/",
-        newBaseURI
-      );
+      .withArgs(baseURI, newBaseURI);
   });
 
   it("Should not be able to change baseURI if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
@@ -377,20 +374,20 @@ describe("WhizartArtist", function () {
   });
 
   it("Should change supply available with success", async () => {
-    const tx = await contract.setSupplyAvailable(100);
+    const tx = await contract.setSupplyAvailable(2400);
     await tx.wait();
 
     await expect(tx)
       .to.emit(contract, "SupplyAvailableChanged")
-      .withArgs(1000, 100);
-    expect(await contract.supplyAvailable()).to.eq(100);
+      .withArgs(2300, 2400);
+    expect(await contract.supplyAvailable()).to.eq(2400);
   });
 
-  it("Should not be able to change supply available if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
+  it("Should not be able to change supply available if caller hasn't DESIGNER_ROLE", async () => {
     await expect(
       contract.connect(user).setSupplyAvailable(100)
     ).to.be.revertedWith(
-      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DESIGNER_ROLE}`
     );
   });
 
@@ -401,9 +398,9 @@ describe("WhizartArtist", function () {
     await expect(tx).to.emit(contract, "MintAmountChanged").withArgs(2, 3);
   });
 
-  it("Should not be able to change mint amount if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
+  it("Should not be able to change mint amount if caller hasn't DESIGNER_ROLE", async () => {
     await expect(contract.connect(user).setMintAmount(3)).to.be.revertedWith(
-      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DESIGNER_ROLE}`
     );
   });
 
@@ -430,7 +427,7 @@ describe("WhizartArtist", function () {
     const dropRate = await contract.getDropRate();
     await expect(tx)
       .to.emit(contract, "DropRateChanged")
-      .withArgs([41, 26, 20, 9, 4], [400, 400, 100, 70, 30]);
+      .withArgs([0, 50, 39, 9, 2], [400, 400, 100, 70, 30]);
     expect(dropRate.length).to.be.eq(5);
   });
 

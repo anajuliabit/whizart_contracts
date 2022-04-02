@@ -4,7 +4,6 @@
 import {
   BaseContract,
   BigNumber,
-  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -22,7 +21,6 @@ export interface IWhizartArtistInterface extends utils.Interface {
   functions: {
     "getMintPrice()": FunctionFragment;
     "mint()": FunctionFragment;
-    "mintBox(address,uint8)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -30,17 +28,12 @@ export interface IWhizartArtistInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "mint", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "mintBox",
-    values: [string, BigNumberish]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "getMintPrice",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "mintBox", data: BytesLike): Result;
 
   events: {};
 }
@@ -79,12 +72,6 @@ export interface IWhizartArtist extends BaseContract {
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    mintBox(
-      to: string,
-      rarity: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
   };
 
   getMintPrice(
@@ -95,22 +82,10 @@ export interface IWhizartArtist extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  mintBox(
-    to: string,
-    rarity: BigNumberish,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     getMintPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(overrides?: CallOverrides): Promise<void>;
-
-    mintBox(
-      to: string,
-      rarity: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {};
@@ -123,12 +98,6 @@ export interface IWhizartArtist extends BaseContract {
     mint(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    mintBox(
-      to: string,
-      rarity: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -137,12 +106,6 @@ export interface IWhizartArtist extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     mint(
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    mintBox(
-      to: string,
-      rarity: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

@@ -26,6 +26,7 @@ export interface WhizartTokenInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
     "burnFrom(address,uint256)": FunctionFragment;
+    "c_0xad1e35c5(bytes32)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -66,6 +67,10 @@ export interface WhizartTokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "burnFrom",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0xad1e35c5",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
@@ -131,6 +136,10 @@ export interface WhizartTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burnFrom", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xad1e35c5",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseAllowance",
@@ -289,6 +298,11 @@ export interface WhizartToken extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    c_0xad1e35c5(
+      c__0xad1e35c5: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     decimals(overrides?: CallOverrides): Promise<[number]>;
 
     decreaseAllowance(
@@ -393,6 +407,11 @@ export interface WhizartToken extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  c_0xad1e35c5(
+    c__0xad1e35c5: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   decimals(overrides?: CallOverrides): Promise<number>;
 
   decreaseAllowance(
@@ -491,6 +510,11 @@ export interface WhizartToken extends BaseContract {
     burnFrom(
       account: string,
       amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0xad1e35c5(
+      c__0xad1e35c5: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -658,6 +682,11 @@ export interface WhizartToken extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    c_0xad1e35c5(
+      c__0xad1e35c5: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
     decreaseAllowance(
@@ -769,6 +798,11 @@ export interface WhizartToken extends BaseContract {
       account: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    c_0xad1e35c5(
+      c__0xad1e35c5: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;

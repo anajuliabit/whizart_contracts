@@ -38,11 +38,6 @@ contract WhizartPaint is
 	uint256 private constant maskFirst248Bits = ~uint256(0xff);
 
 	uint256 public constant ALL_TYPES = 0;
-	uint256 public constant ROLL = 1;
-	uint256 public constant PENCIL = 2;
-	uint256 public constant Graphitti = 3;
-	uint256 public constant BRUSH = 4;
-	uint256 public constant FRESCO = 5;
 
 	event MintRequested(address to, uint256 targetBlock, uint256 quantity, uint256 paintType);
 	event TokenMinted(address indexed to, uint256 paintType);
@@ -83,6 +78,7 @@ contract WhizartPaint is
 		_setupRole(DESIGNER_ROLE, _msgSender());
 
 		mintActive = false;
+		availablePaints = 5;
 	}
 
 	function addClaimableTokens(Recipient[] memory recipients, uint256 paintType) external onlyRole(STAFF_ROLE) {
@@ -99,7 +95,7 @@ contract WhizartPaint is
 
 	function getClaimableTokens(address to) external view returns (uint256) {
 		uint256 result;
-		for (uint256 i = 0; i < availablePaints; ++i) {
+		for (uint256 i = 0; i <= availablePaints; ++i) {
 			result += claimableTokens[to][i];
 		}
 		return result;

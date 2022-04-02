@@ -30,24 +30,6 @@ const _abi = [
     stateMutability: "payable",
     type: "function",
   },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint8",
-        name: "rarity",
-        type: "uint8",
-      },
-    ],
-    name: "mintBox",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
 ];
 
 export class IWhizartWorkshop__factory {

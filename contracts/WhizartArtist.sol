@@ -115,7 +115,8 @@ contract WhizartArtist is
 		supplyAvailable = 2300;
 		mintAmount = 2;
 		// @TODO change native token price when go to production
-		mintPrice = 0.125 * 10**18;
+		// mintPrice = 0.125 * 10**18;
+		mintPrice = 0.0001 * 10**18;
 		// pre-sale 1
 		dropRate = [0, 50, 39, 9, 2];
 	}
@@ -201,12 +202,6 @@ contract WhizartArtist is
 		emit DropRateChanged(old, value);
 	}
 
-	function setMintPrice(uint256 value) external onlyRole(DESIGNER_ROLE) {
-		uint256 old = mintPrice;
-		mintPrice = value;
-		emit PriceChanged(old, mintPrice);
-	}
-
 	function setMintAmount(uint256 _mintAmount) external onlyRole(DESIGNER_ROLE) {
 		uint256 old = mintAmount;
 		mintAmount = _mintAmount;
@@ -217,12 +212,6 @@ contract WhizartArtist is
 		uint256 old = supplyAvailable;
 		supplyAvailable = _supplyAvailable;
 		emit SupplyAvailableChanged(old, supplyAvailable);
-	}
-
-	function setBaseURI(string memory _newBaseURI) external onlyRole(DESIGNER_ROLE) {
-		string memory old = baseURI;
-		baseURI = _newBaseURI;
-		emit BaseURIChanged(old, baseURI);
 	}
 
 	/*
@@ -288,6 +277,18 @@ contract WhizartArtist is
 	/*
 	This section has all functions available only for DEFAULT_ADMIN_ROLE
 */
+
+	function setMintPrice(uint256 value) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		uint256 old = mintPrice;
+		mintPrice = value;
+		emit PriceChanged(old, mintPrice);
+	}
+
+	function setBaseURI(string memory _newBaseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
+		string memory old = baseURI;
+		baseURI = _newBaseURI;
+		emit BaseURIChanged(old, baseURI);
+	}
 
 	function withdraw(address _to, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 		require(address(this).balance >= _amount, "Invalid amount");

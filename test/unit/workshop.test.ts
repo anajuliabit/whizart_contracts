@@ -5,6 +5,7 @@ import { ContractTransaction } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import {
   DEFAULT_ADMIN_ROLE,
+  DESIGNER_ROLE,
   MAINTENANCE_ROLE,
   MINT_PRICE_WORKSHOP,
   STAFF_ROLE,
@@ -386,11 +387,11 @@ describe("WhizartWorkshop", function () {
     expect(await contract.supplyAvailable()).to.eq(100);
   });
 
-  it("Should not be able to change supply available if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
+  it("Should not be able to change supply available if caller hasn't DESIGNER_ROLE", async () => {
     await expect(
       contract.connect(user).setSupplyAvailable(100)
     ).to.be.revertedWith(
-      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DESIGNER_ROLE}`
     );
   });
 
@@ -401,9 +402,9 @@ describe("WhizartWorkshop", function () {
     await expect(tx).to.emit(contract, "MintAmountChanged").withArgs(2, 3);
   });
 
-  it("Should not be able to change mint amount if caller hasn't DEFAULT_ADMIN_ROLE", async () => {
+  it("Should not be able to change mint amount if caller hasn't DESIGNER_ROLE", async () => {
     await expect(contract.connect(user).setMintAmount(3)).to.be.revertedWith(
-      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      `AccessControl: account ${user.address.toLowerCase()} is missing role ${DESIGNER_ROLE}`
     );
   });
 
