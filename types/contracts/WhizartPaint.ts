@@ -37,7 +37,6 @@ export interface WhizartPaintInterface extends utils.Interface {
     "availablePaints()": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
-    "c_0x6bf23b49(bytes32)": FunctionFragment;
     "claim()": FunctionFragment;
     "claimableTokens(address,uint256)": FunctionFragment;
     "currentIndex(uint256)": FunctionFragment;
@@ -99,10 +98,6 @@ export interface WhizartPaintInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "balanceOfBatch",
     values: [string[], BigNumberish[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x6bf23b49",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "claim", values?: undefined): string;
   encodeFunctionData(
@@ -214,10 +209,6 @@ export interface WhizartPaintInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x6bf23b49",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
@@ -482,11 +473,6 @@ export interface WhizartPaint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
-    c_0x6bf23b49(
-      c__0x6bf23b49: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     claim(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -644,11 +630,6 @@ export interface WhizartPaint extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
-  c_0x6bf23b49(
-    c__0x6bf23b49: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   claim(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -802,11 +783,6 @@ export interface WhizartPaint extends BaseContract {
       ids: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
-
-    c_0x6bf23b49(
-      c__0x6bf23b49: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     claim(overrides?: CallOverrides): Promise<void>;
 
@@ -1084,11 +1060,6 @@ export interface WhizartPaint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    c_0x6bf23b49(
-      c__0x6bf23b49: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     claim(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1243,11 +1214,6 @@ export interface WhizartPaint extends BaseContract {
     balanceOfBatch(
       accounts: string[],
       ids: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x6bf23b49(
-      c__0x6bf23b49: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

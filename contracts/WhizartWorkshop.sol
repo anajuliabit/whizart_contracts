@@ -134,22 +134,22 @@ contract WhizartWorkshop is
 	/// @notice Function to transfer a token from one owner to another
 	/// @param from address The address which the token is transferred from
 	/// @param to address The address which the token is transferred to
-	/// @param tokenId uint256 The token ID
+	/// @param _tokenId uint256 The token ID
 	/// @dev transfer temporarily disabled
 	function _transfer(
 		address from,
 		address to,
-		uint256 tokenId
+		uint256 _tokenId
 	) internal override whenNotPaused nonReentrant {
 		require(false, "Temporarily disabled");
-		ERC721Upgradeable._transfer(from, to, tokenId);
+		ERC721Upgradeable._transfer(from, to, _tokenId);
 	}
 
 	/// @notice Will return the token URI
-	/// @param tokenId uint256 Token ID
-	function tokenURI(uint256 tokenId) public view override returns (string memory) {
-		require(_exists(tokenId), "Workshop doesn't exist");
-		string memory id = StringsUpgradeable.toString(tokenId);
+	/// @param _tokenId uint256 Token ID
+	function tokenURI(uint256 _tokenId) public view override returns (string memory) {
+		require(_exists(_tokenId), "Workshop doesn't exist");
+		string memory id = StringsUpgradeable.toString(_tokenId);
 		return string(abi.encodePacked(_baseURI(), id));
 	}
 
@@ -385,9 +385,9 @@ contract WhizartWorkshop is
 	function _beforeTokenTransfer(
 		address from,
 		address to,
-		uint256 tokenId
+		uint256 _tokenId
 	) internal override whenNotPaused {
-		ERC721Upgradeable._beforeTokenTransfer(from, to, tokenId);
+		ERC721Upgradeable._beforeTokenTransfer(from, to, _tokenId);
 	}
 
 	function _authorizeUpgrade(address) internal override onlyRole(DEVELOPER_ROLE) {}
